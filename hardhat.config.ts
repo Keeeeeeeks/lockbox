@@ -29,6 +29,16 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       chainId: 1660990954,
     },
+    tempoTestnet: {
+      url: process.env.TEMPO_TESTNET_RPC || "https://rpc.moderato.tempo.xyz",
+      accounts: [PRIVATE_KEY],
+      chainId: 42431,
+    },
+    tempo: {
+      url: process.env.TEMPO_RPC || "https://rpc.tempo.xyz",
+      accounts: [PRIVATE_KEY],
+      chainId: 4217,
+    },
     hardhat: {
       chainId: 31337,
     },

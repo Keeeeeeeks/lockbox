@@ -1,0 +1,8 @@
+{
+  "network": "tempoTestnet",
+  "factory": "0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F",
+  "lockbox": "0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861",
+  "threshold": 5,
+  "contributionAmount": "0.001",
+  "deployedAt": "2026-03-22T16:44:32.675Z"
+}

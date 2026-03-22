@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Lockbox — Deploy Encrypted Content</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --bg-primary: #0a0a0b;
+    --bg-secondary: #111113;
+    --bg-tertiary: #19191c;
+    --bg-elevated: #1e1e22;
+    --border: #2a2a2f;
+    --border-subtle: #1f1f24;
+    --text-primary: #f0eeeb;
+    --text-secondary: #b0b0b4;
+    --text-tertiary: #808088;
+    --accent: #c9a227;
+    --accent-dim: #c9a22733;
+    --accent-glow: #c9a22718;
+    --success: #34d399;
+    --success-dim: #34d39922;
+    --error: #f87171;
+    --error-dim: #f8717122;
+    --warning: #fbbf24;
+    --mono: 'DM Mono', 'SF Mono', 'Fira Code', monospace;
+    --sans: 'DM Sans', -apple-system, sans-serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Network Selector */
+  .network-select {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a8e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    transition: border-color 0.15s ease;
+  }
+
+  .network-select:hover { border-color: var(--text-tertiary); }
+  .network-select:focus { outline: none; border-color: var(--accent); }
+
+  /* Connect Button */
+  .btn-connect {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-connect:hover { opacity: 0.85; }
+  .btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-connect.connected {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .wallet-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* No Wallet Banner */
+  .no-wallet {
+    background: var(--error-dim);
+    border: 1px solid var(--error);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--error);
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .no-wallet a {
+    color: var(--error);
+    font-weight: 600;
+  }
+
+  /* Page Title */
+  .page-title {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .page-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  /* Form Card */
+  .form-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .form-section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  /* Form Fields */
+  .field {
+    margin-bottom: 24px;
+  }
+
+  .field:last-child {
+    margin-bottom: 0;
+  }
+
+  .field-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  .field-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .field-input,
+  .field-textarea {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    transition: border-color 0.15s ease;
+    line-height: 1.5;
+  }
+
+  .field-input::placeholder,
+  .field-textarea::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .field-input:hover,
+  .field-textarea:hover {
+    border-color: var(--text-tertiary);
+  }
+
+  .field-input:focus,
+  .field-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .field-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .field-textarea.content-area {
+    min-height: 180px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Number input styling */
+  .field-input[type="number"] {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .field-input[type="number"]::-webkit-inner-spin-button,
+  .field-input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.5;
+  }
+
+  /* Preview Card */
+  .preview-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .preview-card.show { display: block; }
+
+  .preview-header {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .preview-title {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .preview-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .preview-meta {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+  }
+
+  .meta-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .preview-encrypted {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    word-break: break-all;
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 4px;
+  }
+
+  .preview-encrypted::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: linear-gradient(transparent, var(--bg-primary));
+  }
+
+  .preview-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .preview-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  /* Submit / Action Buttons */
+  .btn-submit {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn-submit:hover:not(:disabled) { opacity: 0.85; }
+
+  .btn-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-submit.pending {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
+  }
+
+  .btn-primary-sm {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary-sm:hover { opacity: 0.85; }
+
+  /* TX Status */
+  .tx-status {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    display: none;
+    line-height: 1.5;
+  }
+
+  .tx-status.show { display: block; }
+
+  .tx-status.pending {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+  }
+
+  .tx-status.confirmed {
+    background: var(--success-dim);
+    color: var(--success);
+    border: 1px solid var(--success);
+  }
+
+  .tx-status.error {
+    background: var(--error-dim);
+    color: var(--error);
+    border: 1px solid var(--error);
+  }
+
+  .tx-hash {
+    word-break: break-all;
+    opacity: 0.8;
+  }
+
+  .tx-status a {
+    color: inherit;
+  }
+
+  /* Success Card */
+  .success-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .success-card.show { display: block; }
+
+  .success-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .success-title {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--success);
+    margin-bottom: 6px;
+  }
+
+  .success-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .success-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .success-meta-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .success-meta-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    min-width: 90px;
+  }
+
+  .success-meta-value {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+    word-break: break-all;
+  }
+
+  .success-meta-value a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-dim);
+    transition: border-color 0.15s ease;
+  }
+
+  .success-meta-value a:hover {
+    border-color: var(--accent);
+  }
+
+  .success-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  footer a {
+    color: var(--text-tertiary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s ease;
+  }
+
+  footer a:hover { color: var(--text-secondary); }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .container { padding: 32px 16px 64px; }
+    .form-card { padding: 24px 20px; }
+    .preview-card { padding: 24px 20px; }
+    .success-card { padding: 24px 20px; }
+    .preview-meta { gap: 16px; }
+    .field-row { grid-template-columns: 1fr; gap: 24px; }
+    header { flex-wrap: wrap; gap: 12px; }
+    .preview-actions { flex-direction: column; }
+    .success-actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="index.html" class="logo">
+        <div class="logo-icon"></div>
+        Lockbox
+      </a>
+      <div class="header-actions">
+        <select id="networkSelect" class="network-select">
+          <option value="84532">Base Sepolia</option>
+          <option value="1660990954">Status Sepolia</option>
+          <option value="8453">Base Mainnet</option>
+          <option value="42431">Tempo Testnet</option>
+          <option value="4217">Tempo Mainnet</option>
+        </select>
+        <button id="connectBtn" class="btn-connect">Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- No Wallet Warning -->
+    <div id="noWallet" class="no-wallet" style="display:none">
+      MetaMask not detected. <a href="https://metamask.io/download/" target="_blank" rel="noopener">Install MetaMask</a> to create a lockbox.
+    </div>
+
+    <!-- Page Heading -->
+    <h1 class="page-title">Create a Lockbox</h1>
+    <p class="page-subtitle">Encrypt your content and deploy a new lockbox. Readers collectively contribute to unlock it.</p>
+
+    <!-- Form -->
+    <div id="formCard" class="form-card">
+      <span class="form-section-label">Lockbox Details</span>
+
+      <div class="field">
+        <label class="field-label" for="fieldTitle">Title</label>
+        <input id="fieldTitle" class="field-input" type="text" placeholder="e.g. The Future of Decentralized Publishing" maxlength="120">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="fieldDesc">Description</label>
+        <textarea id="fieldDesc" class="field-textarea" placeholder="A brief description of what readers will unlock..." maxlength="500" rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="fieldContent">Content to Encrypt</label>
+        <textarea id="fieldContent" class="field-textarea content-area" placeholder="Paste your article, essay, or content here..."></textarea>
+        <div class="field-hint">Production uses Lit Protocol threshold encryption. This demo uses base64 encoding as a placeholder.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="fieldThreshold">Threshold</label>
+          <input id="fieldThreshold" class="field-input" type="number" value="5" min="1" max="1000" step="1">
+          <div class="field-hint">Contributions needed to unlock</div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="fieldAmount">Contribution (ETH)</label>
+          <input id="fieldAmount" class="field-input" type="number" value="0.001" min="0.0001" step="0.0001">
+          <div class="field-hint">Each contributor pays this amount</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Button -->
+    <button id="previewBtn" class="btn-submit" type="button">Preview &amp; Deploy</button>
+
+    <!-- Preview Card (hidden by default) -->
+    <div id="previewCard" class="preview-card">
+      <div class="preview-header">
+        <span>Deploy Preview</span>
+        <button id="editBtn" class="btn-secondary" type="button" style="padding:6px 14px;font-size:11px">Edit</button>
+      </div>
+
+      <h2 id="previewTitle" class="preview-title"></h2>
+      <p id="previewDesc" class="preview-desc"></p>
+
+      <div class="preview-meta">
+        <div class="meta-item">
+          <span class="meta-label">Threshold</span>
+          <span id="previewThreshold" class="meta-value"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Price</span>
+          <span id="previewPrice" class="meta-value"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Words</span>
+          <span id="previewWords" class="meta-value"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Network</span>
+          <span id="previewNetwork" class="meta-value"></span>
+        </div>
+      </div>
+
+      <div class="preview-encrypted" id="previewEncrypted"></div>
+      <div class="preview-note">Encrypted content (base64 demo — production uses Lit Protocol)</div>
+
+      <div class="preview-actions">
+        <button id="deployBtn" class="btn-primary-sm" type="button" style="flex:1;text-align:center;padding:14px 24px;font-family:var(--sans);font-size:15px;font-weight:600">Deploy Lockbox</button>
+      </div>
+    </div>
+
+    <!-- TX Status -->
+    <div id="txStatus" class="tx-status"></div>
+
+    <!-- Success Card (hidden by default) -->
+    <div id="successCard" class="success-card">
+      <div class="success-icon">&#x1F513;</div>
+      <div class="success-title">Lockbox Deployed</div>
+      <div class="success-subtitle">Your lockbox is live. Share the link so readers can start contributing.</div>
+
+      <div class="success-meta">
+        <div class="success-meta-row">
+          <span class="success-meta-label">Lockbox ID</span>
+          <span id="successId" class="success-meta-value"></span>
+        </div>
+        <div class="success-meta-row">
+          <span class="success-meta-label">Address</span>
+          <span id="successAddr" class="success-meta-value"></span>
+        </div>
+        <div class="success-meta-row">
+          <span class="success-meta-label">Transaction</span>
+          <span id="successTx" class="success-meta-value"></span>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <a id="viewLockboxBtn" class="btn-primary-sm" href="#" target="_blank">View Lockbox</a>
+        <button id="createAnotherBtn" class="btn-secondary" type="button">Create Another</button>
+      </div>
+    </div>
+
+    <footer>
+      Built for <a href="https://synthesis.audience.app" target="_blank" rel="noopener">The Synthesis</a> hackathon
+    </footer>
+  </div>
+
+<script type="module">
+import { createPublicClient, http, parseEther, encodeFunctionData } from 'https://esm.sh/viem@2.38.3';
+
+// ── Config ──────────────────────────────────────────────────
+const FACTORY_ADDRESSES = {
+  84532: '0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f',
+  1660990954: '0xa309ebea3fc270251337c9a159fb53d2590b84e2',
+  8453: '0x0000000000000000000000000000000000000000',
+  42431: '0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F',
+  4217: '0x0000000000000000000000000000000000000000',
+};
+
+const CHAINS = {
+  84532: {
+    name: 'Base Sepolia',
+    id: 84532,
+    rpcUrl: 'https://sepolia.base.org',
+    explorer: 'https://sepolia.basescan.org',
+    chainIdHex: '0x14A34',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  1660990954: {
+    name: 'Status Sepolia',
+    id: 1660990954,
+    rpcUrl: 'https://public.sepolia.rpc.status.network',
+    explorer: 'https://sepoliascan.status.network',
+    chainIdHex: '0x62F5B50A',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  8453: {
+    name: 'Base Mainnet',
+    id: 8453,
+    rpcUrl: 'https://mainnet.base.org',
+    explorer: 'https://basescan.org',
+    chainIdHex: '0x2105',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  42431: {
+    name: 'Tempo Testnet',
+    id: 42431,
+    rpcUrl: 'https://rpc.moderato.tempo.xyz',
+    explorer: 'https://explore.testnet.tempo.xyz',
+    chainIdHex: '0xA5CF',
+    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+  },
+  4217: {
+    name: 'Tempo Mainnet',
+    id: 4217,
+    rpcUrl: 'https://rpc.tempo.xyz',
+    explorer: 'https://explore.tempo.xyz',
+    chainIdHex: '0x1079',
+    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+  },
+};
+
+const FACTORY_ABI = [
+  {
+    inputs: [
+      { name: '_title', type: 'string' },
+      { name: '_description', type: 'string' },
+      { name: '_metadataURI', type: 'string' },
+      { name: '_encryptedContentCID', type: 'string' },
+      { name: '_threshold', type: 'uint256' },
+      { name: '_contributionAmount', type: 'uint256' },
+      { name: '_teaserCIDs', type: 'string[]' },
+    ],
+    name: 'createLockbox',
+    outputs: [
+      { name: 'lockboxId', type: 'uint256' },
+      { name: 'lockboxAddress', type: 'address' },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: 'lockboxId', type: 'uint256' },
+      { indexed: true, name: 'lockboxAddress', type: 'address' },
+      { indexed: true, name: 'author', type: 'address' },
+      { indexed: false, name: 'title', type: 'string' },
+      { indexed: false, name: 'threshold', type: 'uint256' },
+    ],
+    name: 'LockboxDeployed',
+    type: 'event',
+  },
+];
+
+// ── State ───────────────────────────────────────────────────
+let currentChainId = 84532;
+let connectedAddress = null;
+let publicClient = null;
+let pendingDeploy = null; // { title, description, metadataURI, encryptedCID, threshold, contributionWei, content }
+
+// ── DOM ─────────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+const el = {
+  networkSelect: $('networkSelect'),
+  connectBtn: $('connectBtn'),
+  noWallet: $('noWallet'),
+  formCard: $('formCard'),
+  fieldTitle: $('fieldTitle'),
+  fieldDesc: $('fieldDesc'),
+  fieldContent: $('fieldContent'),
+  fieldThreshold: $('fieldThreshold'),
+  fieldAmount: $('fieldAmount'),
+  previewBtn: $('previewBtn'),
+  previewCard: $('previewCard'),
+  previewTitle: $('previewTitle'),
+  previewDesc: $('previewDesc'),
+  previewThreshold: $('previewThreshold'),
+  previewPrice: $('previewPrice'),
+  previewWords: $('previewWords'),
+  previewNetwork: $('previewNetwork'),
+  previewEncrypted: $('previewEncrypted'),
+  editBtn: $('editBtn'),
+  deployBtn: $('deployBtn'),
+  txStatus: $('txStatus'),
+  successCard: $('successCard'),
+  successId: $('successId'),
+  successAddr: $('successAddr'),
+  successTx: $('successTx'),
+  viewLockboxBtn: $('viewLockboxBtn'),
+  createAnotherBtn: $('createAnotherBtn'),
+};
+
+// ── Helpers ─────────────────────────────────────────────────
+function shortAddr(addr) {
+  return addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : '';
+}
+
+function getFactoryAddr() {
+  return FACTORY_ADDRESSES[currentChainId];
+}
+
+function getChainConfig() {
+  return CHAINS[currentChainId];
+}
+
+function countWords(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function showTxStatus(type, msg) {
+  el.txStatus.className = 'tx-status show ' + type;
+  el.txStatus.innerHTML = msg;
+}
+
+function hideTxStatus() {
+  el.txStatus.className = 'tx-status';
+}
+
+function explorerTxUrl(hash) {
+  return getChainConfig().explorer + '/tx/' + hash;
+}
+
+function explorerAddrUrl(addr) {
+  return getChainConfig().explorer + '/address/' + addr;
+}
+
+function encryptContent(text) {
+  // Demo: base64 encode. Production would use Lit Protocol threshold encryption.
+  const encoded = btoa(unescape(encodeURIComponent(text)));
+  return 'data:lockbox/encrypted;base64,' + encoded;
+}
+
+function generateMetadataURI(title, description, wordCount) {
+  const metadata = {
+    title,
+    description,
+    wordCount,
+    createdAt: new Date().toISOString(),
+  };
+  return 'data:application/json;base64,' + btoa(JSON.stringify(metadata));
+}
+
+// ── Client ──────────────────────────────────────────────────
+function createClient() {
+  const chain = getChainConfig();
+  publicClient = createPublicClient({
+    transport: http(chain.rpcUrl),
+  });
+}
+
+// ── Validate Form ───────────────────────────────────────────
+function validateForm() {
+  const title = el.fieldTitle.value.trim();
+  const desc = el.fieldDesc.value.trim();
+  const content = el.fieldContent.value.trim();
+  const threshold = parseInt(el.fieldThreshold.value, 10);
+  const amount = el.fieldAmount.value.trim();
+
+  const errors = [];
+  if (!title) errors.push('Title is required');
+  if (title.length > 120) errors.push('Title must be 120 characters or fewer');
+  if (!desc) errors.push('Description is required');
+  if (!content) errors.push('Content to encrypt is required');
+  if (!threshold || threshold < 1) errors.push('Threshold must be at least 1');
+  if (!amount || parseFloat(amount) <= 0) errors.push('Contribution amount must be greater than 0');
+
+  return { valid: errors.length === 0, errors, title, desc, content, threshold, amount };
+}
+
+// ── Preview ─────────────────────────────────────────────────
+function showPreview() {
+  const v = validateForm();
+  if (!v.valid) {
+    showTxStatus('error', v.errors.join('<br>'));
+    return;
+  }
+  hideTxStatus();
+
+  const wordCount = countWords(v.content);
+  const encryptedCID = encryptContent(v.content);
+  const metadataURI = generateMetadataURI(v.title, v.desc, wordCount);
+  const contributionWei = parseEther(v.amount);
+
+  pendingDeploy = {
+    title: v.title,
+    description: v.desc,
+    metadataURI,
+    encryptedCID,
+    threshold: v.threshold,
+    contributionWei,
+    amount: v.amount,
+    wordCount,
+  };
+
+  // Fill preview
+  el.previewTitle.textContent = v.title;
+  el.previewDesc.textContent = v.desc;
+  el.previewThreshold.textContent = v.threshold + ' contributions';
+  el.previewPrice.textContent = v.amount + ' ETH';
+  el.previewWords.textContent = wordCount.toLocaleString();
+  el.previewNetwork.textContent = getChainConfig().name;
+  el.previewEncrypted.textContent = encryptedCID;
+
+  // Show preview, hide form
+  el.formCard.style.display = 'none';
+  el.previewBtn.style.display = 'none';
+  el.previewCard.className = 'preview-card show';
+}
+
+function showForm() {
+  el.formCard.style.display = 'block';
+  el.previewBtn.style.display = 'block';
+  el.previewCard.className = 'preview-card';
+  hideTxStatus();
+  pendingDeploy = null;
+}
+
+// ── Deploy ──────────────────────────────────────────────────
+async function deploy() {
+  if (!connectedAddress || !window.ethereum || !pendingDeploy) return;
+
+  const factoryAddr = getFactoryAddr();
+  if (factoryAddr === '0x0000000000000000000000000000000000000000') {
+    showTxStatus('error', 'Base Mainnet factory not deployed yet. Use a testnet.');
+    return;
+  }
+
+  const btn = el.deployBtn;
+  btn.disabled = true;
+  btn.textContent = 'Confirming in wallet...';
+  hideTxStatus();
+
+  try {
+    // Switch to the right network
+    await switchNetwork();
+
+    // Encode the function call
+    const data = encodeFunctionData({
+      abi: FACTORY_ABI,
+      functionName: 'createLockbox',
+      args: [
+        pendingDeploy.title,
+        pendingDeploy.description,
+        pendingDeploy.metadataURI,
+        pendingDeploy.encryptedCID,
+        BigInt(pendingDeploy.threshold),
+        pendingDeploy.contributionWei,
+        [], // teaserCIDs — empty for demo
+      ],
+    });
+
+    // Send transaction via MetaMask
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: connectedAddress,
+        to: factoryAddr,
+        data,
+      }],
+    });
+
+    btn.textContent = 'Transaction pending...';
+    showTxStatus('pending',
+      'Tx submitted &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
+
+    // Wait for confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    if (receipt.status === 'success') {
+      // Parse the LockboxDeployed event from logs
+      let lockboxId = null;
+      let lockboxAddress = null;
+
+      for (const log of receipt.logs) {
+        // LockboxDeployed event topic
+        // keccak256("LockboxDeployed(uint256,address,address,string,uint256)")
+        if (log.topics.length >= 4) {
+          try {
+            lockboxId = parseInt(log.topics[1], 16);
+            lockboxAddress = '0x' + log.topics[2].slice(26);
+            break;
+          } catch (e) {
+            // continue to next log
+          }
+        }
+      }
+
+      if (!lockboxAddress) {
+        // Fallback — just show the tx as confirmed
+        lockboxAddress = 'Unknown (check explorer)';
+      }
+
+      showSuccess(lockboxId, lockboxAddress, txHash);
+    } else {
+      showTxStatus('error', 'Transaction reverted. Check the explorer for details.');
+      btn.textContent = 'Deploy Lockbox';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    console.error('Deploy failed:', err);
+    const msg = err?.message || 'Unknown error';
+    if (msg.includes('User denied') || msg.includes('rejected')) {
+      showTxStatus('error', 'Transaction rejected by user');
+    } else {
+      showTxStatus('error', 'Error: ' + msg.slice(0, 120));
+    }
+    btn.textContent = 'Deploy Lockbox';
+    btn.disabled = false;
+  }
+}
+
+function showSuccess(lockboxId, lockboxAddress, txHash) {
+  const chain = getChainConfig();
+
+  // Fill success card
+  el.successId.textContent = lockboxId !== null ? '#' + lockboxId : '—';
+  el.successAddr.innerHTML = '<a href="' + explorerAddrUrl(lockboxAddress) + '" target="_blank" rel="noopener">' + lockboxAddress + '</a>';
+  el.successTx.innerHTML = '<a href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>';
+
+  // View Lockbox link
+  const viewUrl = 'app.html?network=' + currentChainId + '&lockbox=' + lockboxAddress;
+  el.viewLockboxBtn.href = viewUrl;
+
+  // Hide preview + form, show success
+  el.previewCard.className = 'preview-card';
+  el.formCard.style.display = 'none';
+  el.previewBtn.style.display = 'none';
+  el.successCard.className = 'success-card show';
+  showTxStatus('confirmed',
+    'Lockbox deployed! &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
+}
+
+function resetForm() {
+  el.fieldTitle.value = '';
+  el.fieldDesc.value = '';
+  el.fieldContent.value = '';
+  el.fieldThreshold.value = '5';
+  el.fieldAmount.value = '0.001';
+  pendingDeploy = null;
+
+  el.successCard.className = 'success-card';
+  el.previewCard.className = 'preview-card';
+  el.formCard.style.display = 'block';
+  el.previewBtn.style.display = 'block';
+  hideTxStatus();
+}
+
+// ── Wallet ──────────────────────────────────────────────────
+async function connectWallet() {
+  if (!window.ethereum) {
+    el.noWallet.style.display = 'block';
+    return;
+  }
+
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (accounts.length > 0) {
+      connectedAddress = accounts[0];
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+      el.connectBtn.disabled = false;
+    }
+  } catch (err) {
+    console.error('Connect failed:', err);
+  }
+}
+
+async function switchNetwork() {
+  if (!window.ethereum) return;
+
+  const chain = getChainConfig();
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: chain.chainIdHex }],
+    });
+  } catch (err) {
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: chain.chainIdHex,
+          chainName: chain.name,
+          nativeCurrency: chain.nativeCurrency,
+          rpcUrls: [chain.rpcUrl],
+          blockExplorerUrls: [chain.explorer],
+        }],
+      });
+    }
+  }
+}
+
+// ── Events ──────────────────────────────────────────────────
+el.connectBtn.addEventListener('click', connectWallet);
+
+el.previewBtn.addEventListener('click', () => {
+  if (!connectedAddress) {
+    showTxStatus('error', 'Connect your wallet first');
+    return;
+  }
+  showPreview();
+});
+
+el.editBtn.addEventListener('click', showForm);
+el.deployBtn.addEventListener('click', deploy);
+el.createAnotherBtn.addEventListener('click', resetForm);
+
+el.networkSelect.addEventListener('change', (e) => {
+  currentChainId = Number(e.target.value);
+  createClient();
+  hideTxStatus();
+});
+
+// Listen for MetaMask account/chain changes
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    connectedAddress = accounts[0] || null;
+    if (connectedAddress) {
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+    } else {
+      el.connectBtn.textContent = 'Connect Wallet';
+      el.connectBtn.className = 'btn-connect';
+    }
+  });
+
+  window.ethereum.on('chainChanged', () => {
+    // Optionally sync the network selector
+  });
+} else {
+  el.noWallet.style.display = 'block';
+  el.connectBtn.disabled = true;
+  el.connectBtn.textContent = 'No Wallet';
+}
+
+// ── Auto-connect if already authorized ──────────────────────
+async function autoConnect() {
+  if (!window.ethereum) return;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (accounts.length > 0) {
+      connectedAddress = accounts[0];
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+    }
+  } catch (e) {
+    // Ignore
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────
+createClient();
+autoConnect();
+</script>
+</body>
+</html>
