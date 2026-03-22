@@ -348,6 +348,91 @@
     border: 1px solid var(--border-subtle);
   }
 
+  /* Multiplier Controls */
+  .multiplier-section {
+    margin-bottom: 16px;
+  }
+
+  .multiplier-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .multiplier-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .multiplier-btn:hover:not(:disabled) { border-color: var(--text-tertiary); }
+  .multiplier-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  .multiplier-display {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 52px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    padding: 0 6px;
+  }
+
+  .multiplier-cost {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .multiplier-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .multiplier-max-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-align: center;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .multiplier-max-msg.show {
+    opacity: 1;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-4px); }
+    30% { transform: translateX(4px); }
+    45% { transform: translateX(-3px); }
+    60% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
+    90% { transform: translateX(1px); }
+  }
+
+  .multiplier-section.shake {
+    animation: shake 0.3s ease-out;
+  }
+
   /* TX Status */
   .tx-status {
     margin-top: 12px;
@@ -648,6 +733,20 @@
           <span id="revealLabel" class="reveal-label">Locked</span>
         </div>
 
+        <!-- Multiplier Controls -->
+        <div id="multiplierSection" class="multiplier-section" style="display:none">
+          <div class="multiplier-controls">
+            <button class="multiplier-btn" id="mulSub10">&minus;10</button>
+            <button class="multiplier-btn" id="mulSub1">&minus;1</button>
+            <div class="multiplier-display" id="mulDisplay">1&times;</div>
+            <button class="multiplier-btn" id="mulAdd1">+1</button>
+            <button class="multiplier-btn" id="mulAdd10">+10</button>
+          </div>
+          <div class="multiplier-cost" id="mulCost"></div>
+          <div class="multiplier-note" id="mulNote" style="display:none">Your contribution counts as 1 &mdash; extra supports the author</div>
+          <div class="multiplier-max-msg" id="mulMaxMsg"></div>
+        </div>
+
         <!-- Contribute -->
         <button id="contributeBtn" class="btn-contribute" disabled>Connect wallet to contribute</button>
         <div id="txStatus" class="tx-status"></div>
@@ -716,6 +815,10 @@ let currentChainId = 84532;
 let connectedAddress = null;
 let publicClient = null;
 let refreshTimer = null;
+let multiplierQty = 1;
+let cachedContribAmt = 0n;
+let cachedRemaining = Infinity;
+let maxMsgTimer = null;
 
 // ── DOM ─────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -739,6 +842,15 @@ const el = {
   contributeBtn: $('contributeBtn'),
   txStatus: $('txStatus'),
   contributorsList: $('contributorsList'),
+  multiplierSection: $('multiplierSection'),
+  mulDisplay: $('mulDisplay'),
+  mulCost: $('mulCost'),
+  mulNote: $('mulNote'),
+  mulMaxMsg: $('mulMaxMsg'),
+  mulSub10: $('mulSub10'),
+  mulSub1: $('mulSub1'),
+  mulAdd1: $('mulAdd1'),
+  mulAdd10: $('mulAdd10'),
 };
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -808,6 +920,7 @@ async function loadLockbox() {
     const [current, total, isUnlocked] = progress;
     const currentNum = Number(current);
     const totalNum = Number(total);
+    cachedRemaining = Math.max(0, totalNum - currentNum);
     const pct = totalNum > 0 ? Math.round((currentNum / totalNum) * 100) : 0;
     const level = Number(revealLevel);
 
@@ -882,11 +995,13 @@ function renderContributors(contributors) {
 
 async function updateContributeButton(isUnlocked, contribAmt) {
   const btn = el.contributeBtn;
+  cachedContribAmt = contribAmt;
 
   if (!connectedAddress) {
     btn.textContent = 'Connect wallet to contribute';
     btn.disabled = true;
     btn.className = 'btn-contribute';
+    el.multiplierSection.style.display = 'none';
     return;
   }
 
@@ -894,6 +1009,7 @@ async function updateContributeButton(isUnlocked, contribAmt) {
     btn.textContent = 'Content is unlocked';
     btn.disabled = true;
     btn.className = 'btn-contribute success';
+    el.multiplierSection.style.display = 'none';
     return;
   }
 
@@ -903,16 +1019,98 @@ async function updateContributeButton(isUnlocked, contribAmt) {
       btn.textContent = 'Already contributed';
       btn.disabled = true;
       btn.className = 'btn-contribute already';
+      el.multiplierSection.style.display = 'none';
       return;
     }
   } catch (e) {
     // Ignore read errors
   }
 
+  el.multiplierSection.style.display = 'block';
+
+  if (cachedRemaining > 0 && multiplierQty > cachedRemaining) {
+    multiplierQty = cachedRemaining;
+  }
+
+  updateMultiplierDisplay();
+
   const price = formatEther(contribAmt);
-  btn.textContent = 'Contribute ' + price + ' ETH';
+  if (multiplierQty === 1) {
+    btn.textContent = 'Contribute ' + price + ' ETH';
+  } else {
+    const totalWei = contribAmt * BigInt(multiplierQty);
+    btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(totalWei) + ' ETH)';
+  }
   btn.disabled = false;
   btn.className = 'btn-contribute';
+}
+
+// ── Multiplier ──────────────────────────────────────────────
+function updateMultiplier(delta) {
+  let newQty = multiplierQty + delta;
+  let hitMax = false;
+
+  if (newQty < 1) newQty = 1;
+
+  if (cachedRemaining > 0 && newQty > cachedRemaining) {
+    newQty = cachedRemaining;
+    hitMax = true;
+  }
+
+  multiplierQty = newQty;
+  updateMultiplierDisplay();
+
+  if (hitMax) {
+    triggerShake();
+    showMaxMsg();
+  }
+}
+
+function updateMultiplierDisplay() {
+  el.mulDisplay.textContent = multiplierQty + '\u00d7';
+
+  if (cachedContribAmt > 0n) {
+    const totalWei = cachedContribAmt * BigInt(multiplierQty);
+    const totalEth = formatEther(totalWei);
+    const baseEth = formatEther(cachedContribAmt);
+
+    if (multiplierQty === 1) {
+      el.mulCost.textContent = baseEth + ' ETH';
+      el.mulNote.style.display = 'none';
+    } else {
+      el.mulCost.textContent = multiplierQty + ' \u00d7 ' + baseEth + ' = ' + totalEth + ' ETH';
+      el.mulNote.style.display = 'block';
+    }
+
+    const btn = el.contributeBtn;
+    if (!btn.disabled) {
+      btn.textContent = multiplierQty === 1
+        ? 'Contribute ' + baseEth + ' ETH'
+        : 'Pay ' + multiplierQty + '\u00d7 (' + totalEth + ' ETH)';
+    }
+  }
+
+  el.mulSub1.disabled = multiplierQty <= 1;
+  el.mulSub10.disabled = multiplierQty <= 1;
+}
+
+function triggerShake() {
+  const sec = el.multiplierSection;
+  sec.classList.remove('shake');
+  void sec.offsetWidth;
+  sec.classList.add('shake');
+  sec.addEventListener('animationend', () => {
+    sec.classList.remove('shake');
+  }, { once: true });
+}
+
+function showMaxMsg() {
+  el.mulMaxMsg.textContent = 'Maximum \u2014 only ' + cachedRemaining + ' contribution' + (cachedRemaining !== 1 ? 's' : '') + ' remaining';
+  el.mulMaxMsg.classList.add('show');
+  if (maxMsgTimer) clearTimeout(maxMsgTimer);
+  maxMsgTimer = setTimeout(() => {
+    el.mulMaxMsg.classList.remove('show');
+  }, 3000);
 }
 
 // ── Contribute ──────────────────────────────────────────────
@@ -930,14 +1128,14 @@ async function contribute() {
     await switchNetwork();
 
     const contribAmt = await readContract('contributionAmount');
+    const totalValue = contribAmt * BigInt(multiplierQty);
 
-    // Send transaction via MetaMask
     const txHash = await window.ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
         from: connectedAddress,
         to: getContractAddr(),
-        value: '0x' + contribAmt.toString(16),
+        value: '0x' + totalValue.toString(16),
         data: '0xd7bb99ba', // contribute() selector
       }],
     });
@@ -955,7 +1153,7 @@ async function contribute() {
       btn.textContent = 'Already contributed';
       btn.className = 'btn-contribute already';
       btn.disabled = true;
-      // Refresh data
+      multiplierQty = 1;
       await loadLockbox();
     } else {
       showTxStatus('error', 'Transaction reverted');
@@ -976,7 +1174,15 @@ async function contribute() {
     btn.disabled = false;
     btn.className = 'btn-contribute';
     const contribAmt = await readContract('contributionAmount').catch(() => 0n);
-    btn.textContent = contribAmt ? 'Contribute ' + formatEther(contribAmt) + ' ETH' : 'Contribute';
+    if (contribAmt) {
+      if (multiplierQty === 1) {
+        btn.textContent = 'Contribute ' + formatEther(contribAmt) + ' ETH';
+      } else {
+        btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(contribAmt * BigInt(multiplierQty)) + ' ETH)';
+      }
+    } else {
+      btn.textContent = 'Contribute';
+    }
   }
 }
 
@@ -1030,6 +1236,10 @@ async function switchNetwork() {
 // ── Events ──────────────────────────────────────────────────
 el.connectBtn.addEventListener('click', connectWallet);
 el.contributeBtn.addEventListener('click', contribute);
+el.mulSub10.addEventListener('click', () => updateMultiplier(-10));
+el.mulSub1.addEventListener('click', () => updateMultiplier(-1));
+el.mulAdd1.addEventListener('click', () => updateMultiplier(1));
+el.mulAdd10.addEventListener('click', () => updateMultiplier(10));
 
 el.networkSelect.addEventListener('change', (e) => {
   currentChainId = Number(e.target.value);
