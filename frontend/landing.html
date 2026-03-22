@@ -157,6 +157,25 @@
     max-width: 780px;
   }
 
+  .hero-img {
+    width: 100%;
+    max-width: 680px;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: var(--space-3xl);
+    opacity: 0.85;
+  }
+
+  .unlock-img {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    border-radius: 12px;
+    margin: var(--space-3xl) auto;
+    display: block;
+    opacity: 0.9;
+  }
+
   .hero-eyebrow {
     font-family: var(--mono);
     font-size: 12px;
@@ -769,6 +788,7 @@
 
   <!-- ═══ Hero ═══ -->
   <section class="hero" id="hero">
+    <img src="hero.png" alt="" class="hero-img" />
     <div class="hero-eyebrow">Collectively-unlockable knowledge</div>
     <h1 class="hero-title">Lockbox</h1>
     <p class="hero-subtitle">What if publishing was a multiplayer game?</p>
@@ -843,6 +863,8 @@
             </div>
           </div>
         </div>
+
+        <img src="unlock.png" alt="" class="unlock-img reveal" />
 
         <div class="reveal-grid reveal-stagger">
           <div class="reveal-card reveal" style="--i:0">
