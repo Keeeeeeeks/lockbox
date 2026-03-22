@@ -1,0 +1,11 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Lockbox Agent",
+  "description": "Autonomous agent that creates and manages collectively-unlockable encrypted content. Uses threshold encryption (Lit Protocol) and on-chain payment tracking to enable crowdfunded knowledge access. Each contribution generates an ERC-8004 reputation receipt.",
+  "image": "",
+  "services": [],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": ["reputation"]
+}
