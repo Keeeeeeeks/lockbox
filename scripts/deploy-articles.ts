@@ -52,19 +52,32 @@ async function main() {
     console.log(`--- Article ${i + 1}: "${title}" ---`);
     console.log(`  Threshold: ${threshold}, Price: ${price} ETH`);
 
-    const nonce = await publicClient.getTransactionCount({ address: wallet.account.address });
-
-    const txHash = await wallet.writeContract({
-      address: factoryAddr,
-      abi: factoryAbi,
-      functionName: "createLockbox",
-      args: [title, description, "ipfs://metadata-" + (i + 1), cid, BigInt(threshold), parseEther(price), []],
-      nonce,
-    });
+    let sent = false;
+    let txHash: `0x${string}` = "0x";
+    for (let attempt = 0; attempt < 5 && !sent; attempt++) {
+      try {
+        txHash = await wallet.writeContract({
+          address: factoryAddr,
+          abi: factoryAbi,
+          functionName: "createLockbox",
+          args: [title, description, "ipfs://metadata-" + (i + 1), cid, BigInt(threshold), parseEther(price), []],
+        });
+        sent = true;
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "";
+        if (msg.includes("underpriced") || msg.includes("nonce")) {
+          console.log(`  Nonce conflict, waiting 3s (attempt ${attempt + 1})...`);
+          await new Promise(r => setTimeout(r, 3000));
+        } else { throw e; }
+      }
+    }
+    if (!sent) { console.log("  Failed after 5 attempts, skipping"); continue; }
 
     console.log(`  Tx: ${txHash}`);
     const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
     console.log(`  Block: ${receipt.blockNumber}`);
+
+    await new Promise(r => setTimeout(r, 2000));
 
     const count = await publicClient.readContract({
       address: factoryAddr, abi: factoryAbi, functionName: "getLockboxCount",
