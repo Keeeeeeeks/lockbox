@@ -1,23 +1,25 @@
 import hre from "hardhat";
+import { parseEther } from "viem";
 
 async function main() {
+  const publicClient = await hre.viem.getPublicClient();
+
   console.log("Deploying LockboxFactory...\n");
 
   const factory = await hre.viem.deployContract("LockboxFactory");
   console.log(`LockboxFactory deployed to: ${factory.address}`);
 
-  // Deploy a sample lockbox through the factory
   const title = "The Collective Intelligence Paradox";
   const description =
     "What if the most valuable knowledge could only be accessed through coordination?";
   const metadataURI = process.env.METADATA_CID || "ipfs://placeholder-metadata";
   const encryptedContentCID = process.env.ENCRYPTED_CID || "ipfs://placeholder-encrypted";
-  const threshold = 5n; // 5 contributions to unlock
-  const contributionAmount = hre.ethers.parseEther("0.001"); // 0.001 ETH per contribution
-  const teaserCIDs: string[] = []; // Progressive reveals (can add later)
+  const threshold = 5n;
+  const contributionAmount = parseEther("0.001");
+  const teaserCIDs: string[] = [];
 
   console.log("\nCreating sample Lockbox...");
-  const tx = await factory.write.createLockbox([
+  const txHash = await factory.write.createLockbox([
     title,
     description,
     metadataURI,
@@ -27,11 +29,15 @@ async function main() {
     teaserCIDs,
   ]);
 
-  console.log(`Transaction hash: ${tx}`);
+  console.log(`Transaction hash: ${txHash}`);
+  console.log("Waiting for confirmation...");
 
-  // Read back the created lockbox
+  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+  console.log(`Confirmed in block ${receipt.blockNumber}`);
+
   const lockboxCount = await factory.read.getLockboxCount();
-  const lockboxAddress = await factory.read.getLockboxAddress([lockboxCount - 1n]);
+  const lastIndex = lockboxCount > 0n ? lockboxCount - 1n : 0n;
+  const lockboxAddress = await factory.read.getLockboxAddress([lastIndex]);
   console.log(`\nLockbox #0 deployed to: ${lockboxAddress}`);
 
   console.log("\n=== Deployment Summary ===");
@@ -41,7 +47,6 @@ async function main() {
   console.log(`Price:    0.001 ETH per contribution`);
   console.log(`Network:  ${hre.network.name}`);
 
-  // Save deployment info
   const deploymentInfo = {
     network: hre.network.name,
     factory: factory.address,
