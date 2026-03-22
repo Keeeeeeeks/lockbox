@@ -120,13 +120,18 @@ async function getTrackUUIDs(apiKey: string): Promise<string[]> {
   console.log("━━━ Fetching Track UUIDs ━━━");
 
   const targetTracks = [
-    "open",
-    "protocol labs",
-    "filecoin",
-    "venice",
-    "base",
-    "status",
+    "open track",
+    "agents with receipts",
+    "let the agent cook",
+    "agent services on base",
+    "agentic storage",
+    "go gasless",
+    "private agents",
+    "agents that pay",
+    "dark knowledge",
   ];
+
+  const matched: string[] = [];
 
   const res = await fetch(`${SYNTHESIS_URL}/catalog?page=1&limit=50`, {
     headers: { Authorization: `Bearer ${apiKey}` },
