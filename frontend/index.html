@@ -17,9 +17,9 @@
     --bg-elevated: #1e1e22;
     --border: #2a2a2f;
     --border-subtle: #1f1f24;
-    --text-primary: #e8e6e3;
-    --text-secondary: #8a8a8e;
-    --text-tertiary: #5a5a5e;
+    --text-primary: #f0eeeb;
+    --text-secondary: #b0b0b4;
+    --text-tertiary: #808088;
     --accent: #c9a227;
     --accent-dim: #c9a22733;
     --accent-glow: #c9a22718;
@@ -573,10 +573,10 @@
   <div class="container">
     <!-- Header -->
     <header>
-      <div class="logo">
+      <a href="index.html" class="logo" style="text-decoration:none">
         <div class="logo-icon"></div>
         Lockbox
-      </div>
+      </a>
       <div class="header-actions">
         <select id="networkSelect" class="network-select">
           <option value="84532">Base Sepolia</option>
@@ -786,9 +786,12 @@ async function readContract(fnName, args = []) {
 }
 
 // ── Load Lockbox ────────────────────────────────────────────
+let initialLoad = true;
 async function loadLockbox() {
-  el.loadingState.style.display = 'block';
-  el.cardContent.style.display = 'none';
+  if (initialLoad) {
+    el.loadingState.style.display = 'block';
+    el.cardContent.style.display = 'none';
+  }
 
   try {
     const [titleVal, descVal, progress, revealLevel, contribAmt, author, contributors] =
@@ -846,6 +849,7 @@ async function loadLockbox() {
 
     el.loadingState.style.display = 'none';
     el.cardContent.style.display = 'block';
+    initialLoad = false;
   } catch (err) {
     console.error('Failed to load lockbox:', err);
     el.loadingState.innerHTML = '<span style="color:var(--error)">Failed to load contract data. Check console.</span>';
@@ -1080,7 +1084,7 @@ autoConnect().then(() => loadLockbox());
 // Auto-refresh every 10s
 refreshTimer = setInterval(() => {
   loadLockbox();
-}, 10000);
+}, 30000);
 </script>
 </body>
 </html>
