@@ -30,7 +30,8 @@ Author encrypts article → stores on IPFS → deploys Lockbox contract
 | Encryption | Lit Protocol (threshold encryption) | Access control tied to contract state |
 | Storage | IPFS / Filecoin | Encrypted content + public metadata |
 | Identity | ERC-8004 | Agent identity + reputation receipts per contribution |
-| Chain | Base Sepolia | Deployment target |
+| Chain | Base, Tempo, Status Sepolia | Multi-network deployment |
+| Payments | MPP (Machine Payments Protocol) | HTTP 402 content gating via Tempo |
 
 ## Quick Start
 
@@ -100,14 +101,34 @@ npm run submit
 | `getLockboxAddress(id)` | Get lockbox address by ID |
 | `getLockboxProgress(id)` | Check progress for any lockbox |
 
+## Deployed Contracts
+
+| Network | Factory | Lockbox |
+|---|---|---|
+| **Base Mainnet** | `0xbdf727a...906f` | `0x2f6104E...D861` |
+| **Tempo Mainnet** | `0xef8e019...6f58` | `0xD1a6cea...5995` |
+| **Base Sepolia** | `0xbdf727a...906f` | `0x2f6104E...D861` |
+| **Status Sepolia** | `0xa309ebe...4e2` | `0x069b29d...4b3` |
+| **Tempo Testnet** | `0xBdF727A...906F` | `0x2f6104E...D861` |
+
+## MPP Integration
+
+Lockbox content can be gated behind HTTP 402 payments via MPP (Machine Payments Protocol) on Tempo:
+
+```bash
+npm run mpp:server   # Start MPP server (0.01 pathUSD per read)
+npm run mpp:client   # Pay and retrieve content
+```
+
 ## Bounty Targets
 
 - **Synthesis Open Track** — Collective unlock as a content primitive
 - **Protocol Labs "Agents With Receipts"** — ERC-8004 reputation receipts for each contribution
 - **Filecoin** — Encrypted content stored on IPFS/Filecoin
 - **Venice** — Private content with trusted collective unlock
-- **Base** — Deployed on Base network
-- **Status Network** — Gasless transaction demo
+- **Base** — Deployed on Base mainnet + testnet
+- **Tempo** — Deployed on Tempo mainnet + testnet with MPP integration
+- **Status Network** — Deployed on Status Sepolia
 
 ## License
 
