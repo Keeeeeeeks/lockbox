@@ -2,7 +2,6 @@
   "name": "lockbox",
   "version": "0.1.0",
   "description": "Collectively-unlockable encrypted content — crowdfunding for knowledge",
-
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
@@ -14,20 +13,24 @@
     "unlock": "tsx scripts/unlock.ts",
     "register": "tsx scripts/register-hackathon.ts",
     "submit": "tsx scripts/submit-hackathon.ts",
-    "demo": "tsx scripts/demo.ts"
+    "demo": "tsx scripts/demo.ts",
+    "mpp:server": "tsx scripts/mpp-server.ts",
+    "mpp:client": "tsx scripts/mpp-client.ts",
+    "deploy:tempo-testnet": "npx hardhat run scripts/deploy-tempo.ts --network tempoTestnet"
   },
   "dependencies": {
-    "@lit-protocol/lit-client": "^8.0.0",
-    "@lit-protocol/auth": "^8.0.0",
     "@lit-protocol/access-control-conditions": "^8.0.0",
+    "@lit-protocol/auth": "^8.0.0",
+    "@lit-protocol/lit-client": "^8.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-viem": "^2.0.0",
     "agent0-sdk": "^1.7.0",
     "dotenv": "^16.4.0",
     "hardhat": "^2.22.0",
+    "mppx": "^0.4.8",
     "tsx": "^4.19.0",
     "typescript": "^5.5.0",
-    "viem": "^2.21.0"
+    "viem": "^2.47.6"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
