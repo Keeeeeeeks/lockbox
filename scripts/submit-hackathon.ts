@@ -133,25 +133,38 @@ async function getTrackUUIDs(apiKey: string): Promise<string[]> {
   });
 
   if (!res.ok) {
-    console.log("Could not fetch tracks. Enter UUIDs manually in .env");
-    return [];
-  }
+    console.log(`Could not fetch tracks: ${res.status}. Using fallback.`);
+  } else {
+    const data = await res.json();
+    const items = Array.isArray(data) ? data
+      : (data as Record<string, unknown>).tracks ?? (data as Record<string, unknown>).items ?? (data as Record<string, unknown>).results ?? [];
+    const tracks = items as Array<Record<string, string>>;
+    console.log(`  Found ${tracks.length} tracks from API`);
 
-  const data = (await res.json()) as {
-    tracks?: Array<{ uuid: string; name: string }>;
-  };
-  const tracks = data.tracks || [];
-  const matched: string[] = [];
-
-  for (const track of tracks) {
-    const nameL = track.name.toLowerCase();
-    if (targetTracks.some((t) => nameL.includes(t))) {
-      matched.push(track.uuid);
-      console.log(`  ${track.name}: ${track.uuid}`);
+    for (const track of tracks) {
+      const name = (track.name || track.title || "").toLowerCase();
+      const uuid = track.uuid || track.id || "";
+      if (uuid && targetTracks.some((t) => name.includes(t))) {
+        matched.push(uuid);
+        console.log(`  ${track.name || track.title}: ${uuid}`);
+      }
     }
   }
 
-  console.log(`\nMatched ${matched.length} tracks\n`);
+  if (matched.length === 0) {
+    console.log("  No tracks matched from API. Paste track UUIDs manually.");
+    const readline = await import("readline");
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise<string>((resolve) =>
+      rl.question("Enter track UUIDs (comma-separated, or press Enter to use Open Track only): ", resolve)
+    );
+    rl.close();
+    if (answer.trim()) {
+      matched.push(...answer.split(",").map((s) => s.trim()).filter(Boolean));
+    }
+  }
+
+  console.log(`\nUsing ${matched.length} tracks\n`);
   return matched;
 }
 
@@ -186,6 +199,7 @@ Key moments:
     conversationLog,
     submissionMetadata: {
       agentFramework: "other",
+      agentFrameworkOther: "opencode (Claude Code + Hardhat + viem)",
       agentHarness: "opencode",
       model: "claude-opus-4-6",
       skills: ["brainstorming"],
@@ -270,6 +284,11 @@ async function main() {
   const moltbookPostURL = await createMoltbookPost(repoURL);
 
   const trackUUIDs = await getTrackUUIDs(apiKey);
+
+  if (trackUUIDs.length === 0) {
+    console.error("At least 1 track UUID is required. Find track UUIDs from the hackathon site and retry.");
+    process.exit(1);
+  }
 
   const projectUUID = await submitProject(
     apiKey,
