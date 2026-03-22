@@ -1,13 +1,31 @@
 import hre from "hardhat";
 import { parseEther } from "viem";
 
+async function waitForNonce(publicClient: any, address: `0x${string}`, expectedNonce: number, maxWait = 30000) {
+  const start = Date.now();
+  while (Date.now() - start < maxWait) {
+    const current = await publicClient.getTransactionCount({ address });
+    if (current >= expectedNonce) return current;
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  throw new Error(`Timed out waiting for nonce ${expectedNonce}`);
+}
+
 async function main() {
   const publicClient = await hre.viem.getPublicClient();
+  const [wallet] = await hre.viem.getWalletClients();
+  const sender = wallet.account.address;
 
-  console.log("Deploying LockboxFactory...\n");
+  const nonceBefore = await publicClient.getTransactionCount({ address: sender });
+  console.log(`Sender: ${sender} (nonce: ${nonceBefore})\n`);
 
+  console.log("Deploying LockboxFactory...");
   const factory = await hre.viem.deployContract("LockboxFactory");
   console.log(`LockboxFactory deployed to: ${factory.address}`);
+
+  console.log("Waiting for nonce to update...");
+  await waitForNonce(publicClient, sender, nonceBefore + 1);
+  console.log("Nonce confirmed.\n");
 
   const title = "The Collective Intelligence Paradox";
   const description =
@@ -18,7 +36,7 @@ async function main() {
   const contributionAmount = parseEther("0.001");
   const teaserCIDs: string[] = [];
 
-  console.log("\nCreating sample Lockbox...");
+  console.log("Creating sample Lockbox...");
   const txHash = await factory.write.createLockbox([
     title,
     description,
@@ -38,7 +56,7 @@ async function main() {
   const lockboxCount = await factory.read.getLockboxCount();
   const lastIndex = lockboxCount > 0n ? lockboxCount - 1n : 0n;
   const lockboxAddress = await factory.read.getLockboxAddress([lastIndex]);
-  console.log(`\nLockbox #0 deployed to: ${lockboxAddress}`);
+  console.log(`\nLockbox deployed to: ${lockboxAddress}`);
 
   console.log("\n=== Deployment Summary ===");
   console.log(`Factory:  ${factory.address}`);

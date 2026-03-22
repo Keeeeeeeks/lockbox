@@ -1,0 +1,8 @@
+{
+  "network": "statusSepolia",
+  "factory": "0xa309ebea3fc270251337c9a159fb53d2590b84e2",
+  "lockbox": "0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3",
+  "threshold": 5,
+  "contributionAmount": "0.001",
+  "deployedAt": "2026-03-22T15:38:36.245Z"
+}
