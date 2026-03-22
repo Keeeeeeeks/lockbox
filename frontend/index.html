@@ -664,8 +664,11 @@
       </a>
       <div class="header-actions">
         <select id="networkSelect" class="network-select">
+          <option value="8453">Base</option>
+          <option value="4217">Tempo</option>
           <option value="84532">Base Sepolia</option>
           <option value="1660990954">Status Sepolia</option>
+          <option value="42431">Tempo Testnet</option>
         </select>
         <button id="connectBtn" class="btn-connect">Connect Wallet</button>
       </div>
@@ -772,11 +775,30 @@ import { baseSepolia } from 'https://esm.sh/viem@2.38.3/chains';
 
 // ── Config ──────────────────────────────────────────────────
 const CONTRACTS = {
+  8453: '0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861',
+  4217: '0xD1a6ceaCbdf2860a0d086b5d5877aD69b2655995',
   84532: '0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861',
   1660990954: '0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3',
+  42431: '0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861',
 };
 
 const CHAINS = {
+  8453: {
+    name: 'Base',
+    id: 8453,
+    rpcUrl: 'https://mainnet.base.org',
+    explorer: 'https://basescan.org',
+    chainIdHex: '0x2105',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  4217: {
+    name: 'Tempo',
+    id: 4217,
+    rpcUrl: 'https://rpc.tempo.xyz',
+    explorer: 'https://explore.tempo.xyz',
+    chainIdHex: '0x1079',
+    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+  },
   84532: {
     name: 'Base Sepolia',
     id: 84532,
@@ -792,6 +814,14 @@ const CHAINS = {
     explorer: 'https://sepoliascan.status.network',
     chainIdHex: '0x62F5B50A',
     nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  42431: {
+    name: 'Tempo Testnet',
+    id: 42431,
+    rpcUrl: 'https://rpc.moderato.tempo.xyz',
+    explorer: 'https://explore.testnet.tempo.xyz',
+    chainIdHex: '0xA5CF',
+    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
   },
 };
 
