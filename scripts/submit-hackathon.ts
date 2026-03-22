@@ -251,7 +251,7 @@ async function main() {
   const teamUUID = process.env.SYNTHESIS_TEAM_UUID;
   const walletAddress = process.env.WALLET_ADDRESS;
   const repoURL =
-    process.env.REPO_URL || "https://github.com/keecraw/lockbox";
+    process.env.REPO_URL || "https://github.com/Keeeeeeeks/lockbox";
 
   if (!apiKey || !teamUUID) {
     console.error("Run register-hackathon.ts first, then set SYNTHESIS_API_KEY and SYNTHESIS_TEAM_UUID in .env");
