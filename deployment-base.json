@@ -1,0 +1,8 @@
+{
+  "network": "base",
+  "factory": "0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f",
+  "lockbox": "0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861",
+  "threshold": 5,
+  "contributionAmount": "0.001",
+  "deployedAt": "2026-03-22T17:10:11.639Z"
+}
