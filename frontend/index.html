@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lockbox — Collectively Unlock Knowledge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --bg-primary: #0a0a0b;
+    --bg-secondary: #111113;
+    --bg-tertiary: #19191c;
+    --bg-elevated: #1e1e22;
+    --border: #2a2a2f;
+    --border-subtle: #1f1f24;
+    --text-primary: #e8e6e3;
+    --text-secondary: #8a8a8e;
+    --text-tertiary: #5a5a5e;
+    --accent: #c9a227;
+    --accent-dim: #c9a22733;
+    --accent-glow: #c9a22718;
+    --success: #34d399;
+    --success-dim: #34d39922;
+    --error: #f87171;
+    --error-dim: #f8717122;
+    --warning: #fbbf24;
+    --mono: 'DM Mono', 'SF Mono', 'Fira Code', monospace;
+    --sans: 'DM Sans', -apple-system, sans-serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Network Selector */
+  .network-select {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a8e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    transition: border-color 0.15s ease;
+  }
+
+  .network-select:hover { border-color: var(--text-tertiary); }
+  .network-select:focus { outline: none; border-color: var(--accent); }
+
+  /* Connect Button */
+  .btn-connect {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-connect:hover { opacity: 0.85; }
+  .btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-connect.connected {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .wallet-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* No Wallet Banner */
+  .no-wallet {
+    background: var(--error-dim);
+    border: 1px solid var(--error);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--error);
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .no-wallet a {
+    color: var(--error);
+    font-weight: 600;
+  }
+
+  /* Lockbox Card */
+  .lockbox-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .lockbox-title {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .lockbox-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .lockbox-meta {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+  }
+
+  .meta-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* Progress Section */
+  .progress-section {
+    margin-bottom: 28px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .progress-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.4s ease-out;
+    position: relative;
+    min-width: 0;
+  }
+
+  .progress-bar-fill.full {
+    background: var(--success);
+  }
+
+  .progress-pct {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Reveal Level */
+  .reveal-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .reveal-pip {
+    width: 32px;
+    height: 4px;
+    background: var(--bg-primary);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+  }
+
+  .reveal-pip.active { background: var(--accent); }
+  .reveal-pip.unlocked { background: var(--success); }
+
+  .reveal-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Contribute Button */
+  .btn-contribute {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    position: relative;
+  }
+
+  .btn-contribute:hover:not(:disabled) { opacity: 0.85; }
+
+  .btn-contribute:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-contribute.success {
+    background: var(--success);
+    color: var(--bg-primary);
+  }
+
+  .btn-contribute.pending {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-contribute.already {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* TX Status */
+  .tx-status {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    display: none;
+  }
+
+  .tx-status.show { display: block; }
+
+  .tx-status.pending {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+  }
+
+  .tx-status.confirmed {
+    background: var(--success-dim);
+    color: var(--success);
+    border: 1px solid var(--success);
+  }
+
+  .tx-status.error {
+    background: var(--error-dim);
+    color: var(--error);
+    border: 1px solid var(--error);
+  }
+
+  .tx-hash {
+    word-break: break-all;
+    opacity: 0.8;
+  }
+
+  /* Unlock Banner */
+  .unlock-banner {
+    background: var(--success-dim);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .unlock-banner.show { display: block; }
+
+  .unlock-banner .unlock-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .unlock-banner .unlock-text {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--success);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Contributors */
+  .contributors-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px 32px;
+  }
+
+  .contributors-header {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+  }
+
+  .contributor-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .contributor-item {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .contributor-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .contributor-you {
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .empty-contributors {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+
+  /* Loading State */
+  .loading {
+    text-align: center;
+    padding: 64px 0;
+    color: var(--text-tertiary);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .loading-dot {
+    animation: pulse 1.2s ease-in-out infinite;
+    color: var(--accent);
+  }
+
+  /* Author badge */
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .author-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+  }
+
+  .author-address {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  footer a {
+    color: var(--text-tertiary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s ease;
+  }
+
+  footer a:hover { color: var(--text-secondary); }
+
+  /* Skeleton loading */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-elevated) 50%, var(--bg-tertiary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .skeleton-text {
+    height: 16px;
+    width: 60%;
+    margin-bottom: 8px;
+  }
+
+  .skeleton-title {
+    height: 28px;
+    width: 80%;
+    margin-bottom: 12px;
+  }
+
+  .skeleton-bar {
+    height: 8px;
+    width: 100%;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .container { padding: 32px 16px 64px; }
+    .lockbox-card { padding: 24px 20px; }
+    .contributors-section { padding: 20px; }
+    .lockbox-meta { gap: 16px; }
+    header { flex-wrap: wrap; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <div class="logo-icon"></div>
+        Lockbox
+      </div>
+      <div class="header-actions">
+        <select id="networkSelect" class="network-select">
+          <option value="84532">Base Sepolia</option>
+          <option value="1660990954">Status Sepolia</option>
+        </select>
+        <button id="connectBtn" class="btn-connect">Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- No Wallet Warning -->
+    <div id="noWallet" class="no-wallet" style="display:none">
+      MetaMask not detected. <a href="https://metamask.io/download/" target="_blank" rel="noopener">Install MetaMask</a> to interact with this lockbox.
+    </div>
+
+    <!-- Unlock Banner -->
+    <div id="unlockBanner" class="unlock-banner">
+      <div class="unlock-icon">&#x1F513;</div>
+      <div class="unlock-text">Content Unlocked</div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="lockbox-card" id="lockboxCard">
+      <div id="loadingState" class="loading">
+        <span class="loading-dot">&#9679;</span> Reading from chain<span class="loading-dot">...</span>
+      </div>
+
+      <div id="cardContent" style="display:none">
+        <div class="author-row">
+          <span class="author-label">by</span>
+          <span id="authorAddr" class="author-address"></span>
+        </div>
+
+        <h1 id="lockboxTitle" class="lockbox-title"></h1>
+        <p id="lockboxDesc" class="lockbox-desc"></p>
+
+        <div class="lockbox-meta">
+          <div class="meta-item">
+            <span class="meta-label">Price</span>
+            <span id="metaPrice" class="meta-value"></span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Threshold</span>
+            <span id="metaThreshold" class="meta-value"></span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Status</span>
+            <span id="metaStatus" class="meta-value"></span>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Progress</span>
+            <span id="progressCount" class="progress-count">0 of 0</span>
+          </div>
+          <div class="progress-bar-track">
+            <div id="progressFill" class="progress-bar-fill" style="width:0%"></div>
+          </div>
+          <div id="progressPct" class="progress-pct">0%</div>
+        </div>
+
+        <!-- Reveal Level -->
+        <div class="reveal-section">
+          <div id="pip0" class="reveal-pip"></div>
+          <div id="pip1" class="reveal-pip"></div>
+          <div id="pip2" class="reveal-pip"></div>
+          <div id="pip3" class="reveal-pip"></div>
+          <span id="revealLabel" class="reveal-label">Locked</span>
+        </div>
+
+        <!-- Contribute -->
+        <button id="contributeBtn" class="btn-contribute" disabled>Connect wallet to contribute</button>
+        <div id="txStatus" class="tx-status"></div>
+      </div>
+    </div>
+
+    <!-- Contributors -->
+    <div class="contributors-section">
+      <div class="contributors-header">Contributors</div>
+      <div id="contributorsList">
+        <span class="empty-contributors">No contributions yet</span>
+      </div>
+    </div>
+
+    <footer>
+      Built for <a href="https://synthesis.audience.app" target="_blank" rel="noopener">The Synthesis</a> hackathon
+    </footer>
+  </div>
+
+<script type="module">
+import { createPublicClient, http, formatEther, parseAbi } from 'https://esm.sh/viem@2.38.3';
+import { baseSepolia } from 'https://esm.sh/viem@2.38.3/chains';
+
+// ── Config ──────────────────────────────────────────────────
+const CONTRACTS = {
+  84532: '0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861',
+  1660990954: '0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3',
+};
+
+const CHAINS = {
+  84532: {
+    name: 'Base Sepolia',
+    id: 84532,
+    rpcUrl: 'https://sepolia.base.org',
+    explorer: 'https://sepolia.basescan.org',
+    chainIdHex: '0x14A34',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+  1660990954: {
+    name: 'Status Sepolia',
+    id: 1660990954,
+    rpcUrl: 'https://public.sepolia.status.im',
+    explorer: 'https://sepoliascan.status.im',
+    chainIdHex: '0x62F5B50A',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  },
+};
+
+const ABI = parseAbi([
+  'function title() view returns (string)',
+  'function description() view returns (string)',
+  'function contribute() payable',
+  'function getProgress() view returns (uint256 current, uint256 total, bool unlockedStatus)',
+  'function getRevealLevel() view returns (uint8)',
+  'function contributionAmount() view returns (uint256)',
+  'function getContributors() view returns (address[])',
+  'function hasContributed(address) view returns (bool)',
+  'function isUnlocked() view returns (bool)',
+  'function author() view returns (address)',
+  'function threshold() view returns (uint256)',
+  'function contributionCount() view returns (uint256)',
+]);
+
+// ── State ───────────────────────────────────────────────────
+let currentChainId = 84532;
+let connectedAddress = null;
+let publicClient = null;
+let refreshTimer = null;
+
+// ── DOM ─────────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+const el = {
+  networkSelect: $('networkSelect'),
+  connectBtn: $('connectBtn'),
+  noWallet: $('noWallet'),
+  unlockBanner: $('unlockBanner'),
+  loadingState: $('loadingState'),
+  cardContent: $('cardContent'),
+  authorAddr: $('authorAddr'),
+  lockboxTitle: $('lockboxTitle'),
+  lockboxDesc: $('lockboxDesc'),
+  metaPrice: $('metaPrice'),
+  metaThreshold: $('metaThreshold'),
+  metaStatus: $('metaStatus'),
+  progressCount: $('progressCount'),
+  progressFill: $('progressFill'),
+  progressPct: $('progressPct'),
+  revealLabel: $('revealLabel'),
+  contributeBtn: $('contributeBtn'),
+  txStatus: $('txStatus'),
+  contributorsList: $('contributorsList'),
+};
+
+// ── Helpers ─────────────────────────────────────────────────
+function shortAddr(addr) {
+  return addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : '';
+}
+
+function getContractAddr() {
+  return CONTRACTS[currentChainId];
+}
+
+function getChainConfig() {
+  return CHAINS[currentChainId];
+}
+
+function showTxStatus(type, msg) {
+  el.txStatus.className = 'tx-status show ' + type;
+  el.txStatus.innerHTML = msg;
+}
+
+function hideTxStatus() {
+  el.txStatus.className = 'tx-status';
+}
+
+function explorerTxUrl(hash) {
+  return getChainConfig().explorer + '/tx/' + hash;
+}
+
+// ── Client ──────────────────────────────────────────────────
+function createClient() {
+  const chain = getChainConfig();
+  publicClient = createPublicClient({
+    transport: http(chain.rpcUrl),
+  });
+}
+
+// ── Read Contract ───────────────────────────────────────────
+async function readContract(fnName, args = []) {
+  return publicClient.readContract({
+    address: getContractAddr(),
+    abi: ABI,
+    functionName: fnName,
+    args,
+  });
+}
+
+// ── Load Lockbox ────────────────────────────────────────────
+async function loadLockbox() {
+  el.loadingState.style.display = 'block';
+  el.cardContent.style.display = 'none';
+
+  try {
+    const [titleVal, descVal, progress, revealLevel, contribAmt, author, contributors] =
+      await Promise.all([
+        readContract('title'),
+        readContract('description'),
+        readContract('getProgress'),
+        readContract('getRevealLevel'),
+        readContract('contributionAmount'),
+        readContract('author'),
+        readContract('getContributors'),
+      ]);
+
+    const [current, total, isUnlocked] = progress;
+    const currentNum = Number(current);
+    const totalNum = Number(total);
+    const pct = totalNum > 0 ? Math.round((currentNum / totalNum) * 100) : 0;
+    const level = Number(revealLevel);
+
+    // Title & description
+    el.lockboxTitle.textContent = titleVal;
+    el.lockboxDesc.textContent = descVal;
+    el.authorAddr.textContent = shortAddr(author);
+
+    // Meta
+    el.metaPrice.textContent = formatEther(contribAmt) + ' ETH';
+    el.metaThreshold.textContent = totalNum + ' contributions';
+    el.metaStatus.textContent = isUnlocked ? 'Unlocked' : 'Locked';
+    el.metaStatus.style.color = isUnlocked ? 'var(--success)' : 'var(--accent)';
+
+    // Progress
+    el.progressCount.textContent = currentNum + ' of ' + totalNum;
+    el.progressFill.style.width = pct + '%';
+    el.progressFill.className = 'progress-bar-fill' + (isUnlocked ? ' full' : '');
+    el.progressPct.textContent = pct + '%';
+
+    // Reveal pips
+    const revealLabels = ['Locked', '25% Revealed', '50% Revealed', '75% Revealed', 'Fully Unlocked'];
+    for (let i = 0; i < 4; i++) {
+      const pip = $('pip' + i);
+      pip.className = 'reveal-pip';
+      if (isUnlocked) pip.classList.add('unlocked');
+      else if (i < level) pip.classList.add('active');
+    }
+    el.revealLabel.textContent = revealLabels[level] || 'Locked';
+
+    // Unlock banner
+    el.unlockBanner.className = 'unlock-banner' + (isUnlocked ? ' show' : '');
+
+    // Contributors list
+    renderContributors(contributors);
+
+    // Contribute button state
+    await updateContributeButton(isUnlocked, contribAmt);
+
+    el.loadingState.style.display = 'none';
+    el.cardContent.style.display = 'block';
+  } catch (err) {
+    console.error('Failed to load lockbox:', err);
+    el.loadingState.innerHTML = '<span style="color:var(--error)">Failed to load contract data. Check console.</span>';
+  }
+}
+
+function renderContributors(contributors) {
+  if (!contributors || contributors.length === 0) {
+    el.contributorsList.innerHTML = '<span class="empty-contributors">No contributions yet</span>';
+    return;
+  }
+
+  const ul = document.createElement('ul');
+  ul.className = 'contributor-list';
+
+  for (const addr of contributors) {
+    const li = document.createElement('li');
+    li.className = 'contributor-item';
+    const isYou = connectedAddress && addr.toLowerCase() === connectedAddress.toLowerCase();
+    li.innerHTML =
+      '<span class="contributor-dot"></span>' +
+      shortAddr(addr) +
+      (isYou ? '<span class="contributor-you">you</span>' : '');
+    ul.appendChild(li);
+  }
+
+  el.contributorsList.innerHTML = '';
+  el.contributorsList.appendChild(ul);
+}
+
+async function updateContributeButton(isUnlocked, contribAmt) {
+  const btn = el.contributeBtn;
+
+  if (!connectedAddress) {
+    btn.textContent = 'Connect wallet to contribute';
+    btn.disabled = true;
+    btn.className = 'btn-contribute';
+    return;
+  }
+
+  if (isUnlocked) {
+    btn.textContent = 'Content is unlocked';
+    btn.disabled = true;
+    btn.className = 'btn-contribute success';
+    return;
+  }
+
+  try {
+    const alreadyContributed = await readContract('hasContributed', [connectedAddress]);
+    if (alreadyContributed) {
+      btn.textContent = 'Already contributed';
+      btn.disabled = true;
+      btn.className = 'btn-contribute already';
+      return;
+    }
+  } catch (e) {
+    // Ignore read errors
+  }
+
+  const price = formatEther(contribAmt);
+  btn.textContent = 'Contribute ' + price + ' ETH';
+  btn.disabled = false;
+  btn.className = 'btn-contribute';
+}
+
+// ── Contribute ──────────────────────────────────────────────
+async function contribute() {
+  if (!connectedAddress || !window.ethereum) return;
+
+  const btn = el.contributeBtn;
+  btn.disabled = true;
+  btn.textContent = 'Confirming in wallet...';
+  btn.className = 'btn-contribute pending';
+  hideTxStatus();
+
+  try {
+    // Ensure correct network
+    await switchNetwork();
+
+    const contribAmt = await readContract('contributionAmount');
+
+    // Send transaction via MetaMask
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: connectedAddress,
+        to: getContractAddr(),
+        value: '0x' + contribAmt.toString(16),
+        data: '0xd7bb99ba', // contribute() selector
+      }],
+    });
+
+    btn.textContent = 'Transaction pending...';
+    showTxStatus('pending',
+      'Tx submitted &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
+
+    // Wait for confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    if (receipt.status === 'success') {
+      showTxStatus('confirmed',
+        'Confirmed! &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
+      btn.textContent = 'Already contributed';
+      btn.className = 'btn-contribute already';
+      btn.disabled = true;
+      // Refresh data
+      await loadLockbox();
+    } else {
+      showTxStatus('error', 'Transaction reverted');
+      btn.textContent = 'Try again';
+      btn.disabled = false;
+      btn.className = 'btn-contribute';
+    }
+  } catch (err) {
+    console.error('Contribute failed:', err);
+    const msg = err?.message || 'Unknown error';
+    if (msg.includes('User denied') || msg.includes('rejected')) {
+      showTxStatus('error', 'Transaction rejected');
+    } else if (msg.includes('Already contributed')) {
+      showTxStatus('error', 'You have already contributed');
+    } else {
+      showTxStatus('error', 'Error: ' + msg.slice(0, 80));
+    }
+    btn.disabled = false;
+    btn.className = 'btn-contribute';
+    const contribAmt = await readContract('contributionAmount').catch(() => 0n);
+    btn.textContent = contribAmt ? 'Contribute ' + formatEther(contribAmt) + ' ETH' : 'Contribute';
+  }
+}
+
+// ── Wallet ──────────────────────────────────────────────────
+async function connectWallet() {
+  if (!window.ethereum) {
+    el.noWallet.style.display = 'block';
+    return;
+  }
+
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (accounts.length > 0) {
+      connectedAddress = accounts[0];
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+      el.connectBtn.disabled = false;
+      await loadLockbox();
+    }
+  } catch (err) {
+    console.error('Connect failed:', err);
+  }
+}
+
+async function switchNetwork() {
+  if (!window.ethereum) return;
+
+  const chain = getChainConfig();
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: chain.chainIdHex }],
+    });
+  } catch (err) {
+    // Chain not added — try to add it
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: chain.chainIdHex,
+          chainName: chain.name,
+          nativeCurrency: chain.nativeCurrency,
+          rpcUrls: [chain.rpcUrl],
+          blockExplorerUrls: [chain.explorer],
+        }],
+      });
+    }
+  }
+}
+
+// ── Events ──────────────────────────────────────────────────
+el.connectBtn.addEventListener('click', connectWallet);
+el.contributeBtn.addEventListener('click', contribute);
+
+el.networkSelect.addEventListener('change', (e) => {
+  currentChainId = Number(e.target.value);
+  createClient();
+  hideTxStatus();
+  loadLockbox();
+});
+
+// Listen for MetaMask account/chain changes
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    connectedAddress = accounts[0] || null;
+    if (connectedAddress) {
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+    } else {
+      el.connectBtn.textContent = 'Connect Wallet';
+      el.connectBtn.className = 'btn-connect';
+    }
+    loadLockbox();
+  });
+
+  window.ethereum.on('chainChanged', () => {
+    // Refresh on chain change from wallet side
+    loadLockbox();
+  });
+} else {
+  el.noWallet.style.display = 'block';
+  el.connectBtn.disabled = true;
+  el.connectBtn.textContent = 'No Wallet';
+}
+
+// ── Auto-connect if already authorized ──────────────────────
+async function autoConnect() {
+  if (!window.ethereum) return;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (accounts.length > 0) {
+      connectedAddress = accounts[0];
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+    }
+  } catch (e) {
+    // Ignore
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────
+createClient();
+autoConnect().then(() => loadLockbox());
+
+// Auto-refresh every 10s
+refreshTimer = setInterval(() => {
+  loadLockbox();
+}, 10000);
+</script>
+</body>
+</html>
