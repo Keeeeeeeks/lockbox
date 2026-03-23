@@ -1,9 +1,9 @@
 {
   "network": "tempo",
   "chainId": 4217,
-  "factory": "0xef8e019373220d33dc114a94663a7672ea3d6f58",
-  "lockbox": "0xD1a6ceaCbdf2860a0d086b5d5877aD69b2655995",
+  "factory": "0xa309ebea3fc270251337c9a159fb53d2590b84e2",
+  "lockbox": "0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3",
   "threshold": 5,
-  "contributionAmount": "0.001",
-  "deployedAt": "2026-03-22T17:51:00.976Z"
+  "contributionAmount": "1 pathUSD",
+  "deployedAt": "2026-03-23T03:28:36.434Z"
 }

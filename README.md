@@ -18,10 +18,10 @@ Content is encrypted and stored publicly. N people must each contribute before a
 
 | Network | Contract | Address |
 |---|---|---|
-| **Base** | Factory | [`0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f`](https://basescan.org/address/0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f) |
-| **Base** | Lockbox | [`0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861`](https://basescan.org/address/0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861) |
-| **Tempo** | Factory | [`0xef8e019373220d33dc114a94663a7672ea3d6f58`](https://explore.tempo.xyz/address/0xef8e019373220d33dc114a94663a7672ea3d6f58) |
-| **Tempo** | Lockbox | [`0xD1a6ceaCbdf2860a0d086b5d5877aD69b2655995`](https://explore.tempo.xyz/address/0xD1a6ceaCbdf2860a0d086b5d5877aD69b2655995) |
+| **Base** | Factory (v2) | [`0x1d539c742716f1d33ea6a5b0eb89bb2a35660de0`](https://basescan.org/address/0x1d539c742716f1d33ea6a5b0eb89bb2a35660de0) |
+| **Base** | Lockbox (v2) | [`0x3aad5f908950C1bE4427a5f5C35e83a50ad90d68`](https://basescan.org/address/0x3aad5f908950C1bE4427a5f5C35e83a50ad90d68) |
+| **Tempo** | Factory (v2) | [`0xa309ebea3fc270251337c9a159fb53d2590b84e2`](https://explore.tempo.xyz/address/0xa309ebea3fc270251337c9a159fb53d2590b84e2) |
+| **Tempo** | Lockbox (v2) | [`0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3`](https://explore.tempo.xyz/address/0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3) |
 
 ### Testnets
 
@@ -31,8 +31,8 @@ Content is encrypted and stored publicly. N people must each contribute before a
 | **Base Sepolia** | Lockbox (v2) | [`0xC8920AC5ce39f566adBCb3f651A1d9A7e9558D38`](https://sepolia.basescan.org/address/0xC8920AC5ce39f566adBCb3f651A1d9A7e9558D38) |
 | **Status Sepolia** | Factory (v2) | [`0xae3d19983d1fb6e4de51d75f3f32fb85e022e553`](https://sepoliascan.status.network/address/0xae3d19983d1fb6e4de51d75f3f32fb85e022e553) |
 | **Status Sepolia** | Lockbox (v2) | [`0x90559975372d9E01748bF31f0404bd5D74C4ebf2`](https://sepoliascan.status.network/address/0x90559975372d9E01748bF31f0404bd5D74C4ebf2) |
-| **Tempo Testnet** | Factory | [`0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F`](https://explore.testnet.tempo.xyz/address/0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F) |
-| **Tempo Testnet** | Lockbox | [`0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861`](https://explore.testnet.tempo.xyz/address/0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861) |
+| **Tempo Testnet** | Factory (v2) | [`0xa0BF51B2EAC8BdB3a126bF5496d117d7172c0A30`](https://explore.testnet.tempo.xyz/address/0xa0BF51B2EAC8BdB3a126bF5496d117d7172c0A30) |
+| **Tempo Testnet** | Lockbox (v2) | [`0x2Ec9Eb8d4e5F87E4517FAb45349962d6639cc5eb`](https://explore.testnet.tempo.xyz/address/0x2Ec9Eb8d4e5F87E4517FAb45349962d6639cc5eb) |
 
 ---
 
