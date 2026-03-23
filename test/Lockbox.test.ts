@@ -49,18 +49,17 @@ describe("Lockbox", function () {
     expect(current).to.equal(1n);
   });
 
-  it("rejects duplicate contributions", async function () {
-    const { lockboxAddress, lockboxAbi, c1, price } = await deployFixture();
+  it("allows repeat contributions from the same wallet", async function () {
+    const { lockboxAddress, lockboxAbi, publicClient, c1, price } = await deployFixture();
 
     await c1.writeContract({ address: lockboxAddress, abi: lockboxAbi, functionName: "contribute", value: price });
+    await c1.writeContract({ address: lockboxAddress, abi: lockboxAbi, functionName: "contribute", value: price });
 
-    let reverted = false;
-    try {
-      await c1.writeContract({ address: lockboxAddress, abi: lockboxAbi, functionName: "contribute", value: price });
-    } catch {
-      reverted = true;
-    }
-    expect(reverted).to.equal(true);
+    const [current] = await publicClient.readContract({ address: lockboxAddress, abi: lockboxAbi, functionName: "getProgress" });
+    expect(current).to.equal(2n);
+
+    const hasContributed = await publicClient.readContract({ address: lockboxAddress, abi: lockboxAbi, functionName: "hasContributed", args: [c1.account.address] });
+    expect(hasContributed).to.equal(true);
   });
 
   it("unlocks at threshold and allows withdrawal", async function () {

@@ -22,6 +22,7 @@ contract Lockbox {
     string[] public teaserCIDs; // IPFS CIDs for progressive reveals at 25/50/75%
 
     // Contributors
+    // Tracks whether an address has ever contributed at least once.
     mapping(address => bool) public hasContributed;
     address[] public contributors;
 
@@ -87,9 +88,10 @@ contract Lockbox {
     function contribute() external payable {
         require(!unlocked, "Already unlocked");
         require(msg.value >= contributionAmount, "Insufficient payment");
-        require(!hasContributed[msg.sender], "Already contributed");
 
-        hasContributed[msg.sender] = true;
+        if (!hasContributed[msg.sender]) {
+            hasContributed[msg.sender] = true;
+        }
         contributors.push(msg.sender);
         contributionCount++;
 

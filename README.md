@@ -27,10 +27,10 @@ Content is encrypted and stored publicly. N people must each contribute before a
 
 | Network | Contract | Address |
 |---|---|---|
-| **Base Sepolia** | Factory | [`0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f`](https://sepolia.basescan.org/address/0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f) |
-| **Base Sepolia** | Lockbox | [`0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861`](https://sepolia.basescan.org/address/0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861) |
-| **Status Sepolia** | Factory | [`0xa309ebea3fc270251337c9a159fb53d2590b84e2`](https://sepoliascan.status.network/address/0xa309ebea3fc270251337c9a159fb53d2590b84e2) |
-| **Status Sepolia** | Lockbox | [`0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3`](https://sepoliascan.status.network/address/0x069b29dEEb4E7d59f5B1AA8cdC647819851994b3) |
+| **Base Sepolia** | Factory (v2) | [`0xb333abf8b8e510751514c5f91bea10a4cb0fe2b4`](https://sepolia.basescan.org/address/0xb333abf8b8e510751514c5f91bea10a4cb0fe2b4) |
+| **Base Sepolia** | Lockbox (v2) | [`0xC8920AC5ce39f566adBCb3f651A1d9A7e9558D38`](https://sepolia.basescan.org/address/0xC8920AC5ce39f566adBCb3f651A1d9A7e9558D38) |
+| **Status Sepolia** | Factory (v2) | [`0xae3d19983d1fb6e4de51d75f3f32fb85e022e553`](https://sepoliascan.status.network/address/0xae3d19983d1fb6e4de51d75f3f32fb85e022e553) |
+| **Status Sepolia** | Lockbox (v2) | [`0x90559975372d9E01748bF31f0404bd5D74C4ebf2`](https://sepoliascan.status.network/address/0x90559975372d9E01748bF31f0404bd5D74C4ebf2) |
 | **Tempo Testnet** | Factory | [`0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F`](https://explore.testnet.tempo.xyz/address/0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F) |
 | **Tempo Testnet** | Lockbox | [`0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861`](https://explore.testnet.tempo.xyz/address/0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861) |
 

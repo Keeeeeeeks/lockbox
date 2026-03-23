@@ -675,9 +675,10 @@
           <div class="field-hint">Contributions needed to unlock</div>
         </div>
         <div class="field">
-          <label class="field-label" for="fieldAmount">Contribution (ETH)</label>
+          <label id="fieldAmountLabel" class="field-label" for="fieldAmount">Contribution (ETH)</label>
           <input id="fieldAmount" class="field-input" type="number" value="0.001" min="0.0001" step="0.0001">
           <div class="field-hint">Each contributor pays this amount</div>
+          <div id="pathUsdHint" class="field-hint" style="display:none">Tempo lockboxes are denominated in <strong>pathUSD</strong>. Need funds? <a href="https://docs.tempo.xyz/" target="_blank" rel="noopener">Bridge to Tempo</a> or <a href="https://docs.tempo.xyz/guide/stablecoin-dex" target="_blank" rel="noopener">swap into pathUSD</a>.</div>
         </div>
       </div>
     </div>
@@ -762,8 +763,8 @@ import { createPublicClient, http, parseEther, encodeFunctionData } from 'https:
 
 // ── Config ──────────────────────────────────────────────────
 const FACTORY_ADDRESSES = {
-  84532: '0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f',
-  1660990954: '0xa309ebea3fc270251337c9a159fb53d2590b84e2',
+  84532: '0xb333abf8b8e510751514c5f91bea10a4cb0fe2b4',
+  1660990954: '0xae3d19983d1fb6e4de51d75f3f32fb85e022e553',
   8453: '0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f',
   42431: '0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F',
   4217: '0xef8e019373220d33dc114a94663a7672ea3d6f58',
@@ -800,7 +801,7 @@ const CHAINS = {
     rpcUrl: 'https://rpc.moderato.tempo.xyz',
     explorer: 'https://explore.testnet.tempo.xyz',
     chainIdHex: '0xA5CF',
-    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+    nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 6 },
   },
   4217: {
     name: 'Tempo Mainnet',
@@ -808,7 +809,7 @@ const CHAINS = {
     rpcUrl: 'https://rpc.tempo.xyz',
     explorer: 'https://explore.tempo.xyz',
     chainIdHex: '0x1079',
-    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+    nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 6 },
   },
 };
 
@@ -850,6 +851,9 @@ let currentChainId = 84532;
 let connectedAddress = null;
 let publicClient = null;
 let pendingDeploy = null; // { title, description, metadataURI, encryptedCID, threshold, contributionWei, content }
+let lastSuggestedAmount = '0.001';
+
+const TEMPO_CHAIN_IDS = new Set([4217, 42431]);
 
 // ── DOM ─────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -863,6 +867,8 @@ const el = {
   fieldContent: $('fieldContent'),
   fieldThreshold: $('fieldThreshold'),
   fieldAmount: $('fieldAmount'),
+  fieldAmountLabel: $('fieldAmountLabel'),
+  pathUsdHint: $('pathUsdHint'),
   previewBtn: $('previewBtn'),
   previewCard: $('previewCard'),
   previewTitle: $('previewTitle'),
@@ -894,6 +900,30 @@ function getFactoryAddr() {
 
 function getChainConfig() {
   return CHAINS[currentChainId];
+}
+
+function isTempoChain(chainId = currentChainId) {
+  return TEMPO_CHAIN_IDS.has(chainId);
+}
+
+function contributionSymbol(chainId = currentChainId) {
+  return isTempoChain(chainId) ? 'pathUSD' : 'ETH';
+}
+
+function suggestedAmount(chainId = currentChainId) {
+  return isTempoChain(chainId) ? '1' : '0.001';
+}
+
+function updateContributionUi() {
+  const symbol = contributionSymbol();
+  el.fieldAmountLabel.textContent = 'Contribution (' + symbol + ')';
+  el.pathUsdHint.style.display = isTempoChain() ? 'block' : 'none';
+
+  const nextSuggested = suggestedAmount();
+  if (!el.fieldAmount.value || el.fieldAmount.value === lastSuggestedAmount) {
+    el.fieldAmount.value = nextSuggested;
+  }
+  lastSuggestedAmount = nextSuggested;
 }
 
 function countWords(text) {
@@ -989,7 +1019,7 @@ function showPreview() {
   el.previewTitle.textContent = v.title;
   el.previewDesc.textContent = v.desc;
   el.previewThreshold.textContent = v.threshold + ' contributions';
-  el.previewPrice.textContent = v.amount + ' ETH';
+  el.previewPrice.textContent = v.amount + ' ' + contributionSymbol();
   el.previewWords.textContent = wordCount.toLocaleString();
   el.previewNetwork.textContent = getChainConfig().name;
   el.previewEncrypted.textContent = encryptedCID;
@@ -1128,7 +1158,7 @@ function resetForm() {
   el.fieldDesc.value = '';
   el.fieldContent.value = '';
   el.fieldThreshold.value = '5';
-  el.fieldAmount.value = '0.001';
+  el.fieldAmount.value = suggestedAmount();
   pendingDeploy = null;
 
   el.successCard.className = 'success-card';
@@ -1201,6 +1231,7 @@ el.createAnotherBtn.addEventListener('click', resetForm);
 el.networkSelect.addEventListener('change', (e) => {
   currentChainId = Number(e.target.value);
   createClient();
+  updateContributionUi();
   hideTxStatus();
 });
 
@@ -1243,6 +1274,7 @@ async function autoConnect() {
 
 // ── Init ────────────────────────────────────────────────────
 createClient();
+updateContributionUi();
 autoConnect();
 </script>
 </body>

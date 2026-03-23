@@ -13,13 +13,18 @@ async function main() {
   console.log(`LockboxFactory: ${factoryAddr}`);
 
   console.log("\nCreating sample Lockbox...");
+  const isTempoNetwork = hre.network.name === "tempoTestnet" || hre.network.name === "tempo";
+  const contributionAmount = isTempoNetwork
+    ? hre.ethers.parseUnits("1", 6)
+    : hre.ethers.parseEther("0.001");
+
   const tx = await factory.createLockbox(
     "The Collective Intelligence Paradox",
     "What if the most valuable knowledge could only be accessed through coordination?",
     "ipfs://placeholder-metadata",
     "ipfs://placeholder-encrypted",
     5,
-    hre.ethers.parseEther("0.001"),
+    contributionAmount,
     [],
   );
   const receipt = await tx.wait();
@@ -42,7 +47,7 @@ async function main() {
       factory: factoryAddr,
       lockbox: lockboxAddr,
       threshold: 5,
-      contributionAmount: "0.001",
+        contributionAmount: isTempoNetwork ? "1 pathUSD" : "0.001 ETH",
       deployedAt: new Date().toISOString(),
     }, null, 2),
   );

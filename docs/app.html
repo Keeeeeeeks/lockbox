@@ -96,6 +96,10 @@
     gap: 12px;
   }
 
+  .account-wrap {
+    position: relative;
+  }
+
   /* Network Selector */
   .network-select {
     font-family: var(--mono);
@@ -150,6 +154,45 @@
     border-radius: 50%;
     margin-right: 6px;
     vertical-align: middle;
+  }
+
+  .account-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: none;
+    z-index: 20;
+    overflow: hidden;
+  }
+
+  .account-menu.show {
+    display: block;
+  }
+
+  .account-menu-item {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .account-menu-item:last-child {
+    border-bottom: 0;
+  }
+
+  .account-menu-item:hover {
+    background: var(--bg-tertiary);
   }
 
   /* No Wallet Banner */
@@ -466,6 +509,63 @@
   .tx-hash {
     word-break: break-all;
     opacity: 0.8;
+  }
+
+  .tempo-funding {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: none;
+  }
+
+  .tempo-funding.show {
+    display: block;
+  }
+
+  .tempo-funding a {
+    color: var(--accent-bright);
+  }
+
+  .unlock-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    padding: 20px;
+  }
+
+  .unlock-modal.show {
+    display: flex;
+  }
+
+  .unlock-modal-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+
+  .unlock-modal-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    color: var(--accent-bright);
+  }
+
+  .unlock-modal-body {
+    font-family: var(--sans);
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 16px;
   }
 
   /* Unlock Banner */
@@ -866,7 +966,14 @@
           <option value="1660990954">Status Sepolia</option>
           <option value="42431">Tempo Testnet</option>
         </select>
-        <button id="connectBtn" class="btn-connect">Connect Wallet</button>
+        <div class="account-wrap">
+          <button id="connectBtn" class="btn-connect">Connect Wallet</button>
+          <div id="accountMenu" class="account-menu">
+            <button id="copyAddressBtn" class="account-menu-item">Copy address</button>
+            <button id="switchAccountBtn" class="account-menu-item">Switch account</button>
+            <button id="disconnectBtn" class="account-menu-item">Disconnect (UI only)</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -965,6 +1072,7 @@
           <!-- Contribute -->
           <button id="contributeBtn" class="btn-contribute" disabled>Connect wallet to contribute</button>
           <div id="txStatus" class="tx-status"></div>
+          <div id="tempoFundingHint" class="tempo-funding">Need <strong>pathUSD</strong> on Tempo? <a href="https://docs.tempo.xyz/" target="_blank" rel="noopener">Bridge to Tempo</a> or <a href="https://docs.tempo.xyz/guide/stablecoin-dex" target="_blank" rel="noopener">swap into pathUSD</a>.</div>
         </div>
       </div>
 
@@ -990,14 +1098,22 @@
     </footer>
   </div>
 
+  <div id="unlockModal" class="unlock-modal">
+    <div class="unlock-modal-card">
+      <div id="unlockModalTitle" class="unlock-modal-title">Contribution confirmed</div>
+      <div id="unlockModalBody" class="unlock-modal-body"></div>
+      <button id="unlockModalClose" class="btn-contribute">Continue</button>
+    </div>
+  </div>
+
 <script type="module">
 import { createPublicClient, http, formatEther, parseAbi } from 'https://esm.sh/viem@2.38.3';
 
 const FACTORIES = {
   8453: '0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f',
   4217: '0xef8e019373220d33dc114a94663a7672ea3d6f58',
-  84532: '0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f',
-  1660990954: '0xa309ebea3fc270251337c9a159fb53d2590b84e2',
+  84532: '0xb333abf8b8e510751514c5f91bea10a4cb0fe2b4',
+  1660990954: '0xae3d19983d1fb6e4de51d75f3f32fb85e022e553',
   42431: '0xBdF727A08b505De4f9DB7f2B7093acf6F2b3906F',
 };
 
@@ -1016,7 +1132,7 @@ const CHAINS = {
     rpcUrl: 'https://rpc.tempo.xyz',
     explorer: 'https://explore.tempo.xyz',
     chainIdHex: '0x1079',
-    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+    nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 6 },
   },
   84532: {
     name: 'Base Sepolia',
@@ -1040,7 +1156,7 @@ const CHAINS = {
     rpcUrl: 'https://rpc.moderato.tempo.xyz',
     explorer: 'https://explore.testnet.tempo.xyz',
     chainIdHex: '0xA5CF',
-    nativeCurrency: { name: 'USD', symbol: 'USD', decimals: 18 },
+    nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 6 },
   },
 };
 
@@ -1050,6 +1166,7 @@ const ABI = parseAbi([
   'function contribute() payable',
   'function getProgress() view returns (uint256 current, uint256 total, bool unlockedStatus)',
   'function getRevealLevel() view returns (uint8)',
+  'function getTeaserCID(uint8 level) view returns (string)',
   'function contributionAmount() view returns (uint256)',
   'function getContributors() view returns (address[])',
   'function hasContributed(address) view returns (bool)',
@@ -1076,10 +1193,16 @@ let currentView = 'browse';
 let selectedLockboxAddr = null;
 let browseInitialLoad = true;
 
+const TEMPO_CHAIN_IDS = new Set([4217, 42431]);
+
 const $ = (id) => document.getElementById(id);
 const el = {
   networkSelect: $('networkSelect'),
   connectBtn: $('connectBtn'),
+  accountMenu: $('accountMenu'),
+  copyAddressBtn: $('copyAddressBtn'),
+  switchAccountBtn: $('switchAccountBtn'),
+  disconnectBtn: $('disconnectBtn'),
   noWallet: $('noWallet'),
   browseView: $('browseView'),
   browseLoading: $('browseLoading'),
@@ -1102,6 +1225,7 @@ const el = {
   revealLabel: $('revealLabel'),
   contributeBtn: $('contributeBtn'),
   txStatus: $('txStatus'),
+  tempoFundingHint: $('tempoFundingHint'),
   contributorsList: $('contributorsList'),
   multiplierSection: $('multiplierSection'),
   mulDisplay: $('mulDisplay'),
@@ -1114,6 +1238,10 @@ const el = {
   mulAdd10: $('mulAdd10'),
   contentSection: $('contentSection'),
   contentBody: $('contentBody'),
+  unlockModal: $('unlockModal'),
+  unlockModalTitle: $('unlockModalTitle'),
+  unlockModalBody: $('unlockModalBody'),
+  unlockModalClose: $('unlockModalClose'),
 };
 
 function shortAddr(addr) {
@@ -1128,6 +1256,40 @@ function escapeHtml(str) {
 
 function getFactoryAddr() {
   return FACTORIES[currentChainId];
+}
+
+function isTempoChain(chainId = currentChainId) {
+  return TEMPO_CHAIN_IDS.has(chainId);
+}
+
+function contributionSymbol(chainId = currentChainId) {
+  return isTempoChain(chainId) ? 'pathUSD' : 'ETH';
+}
+
+function formatContribution(amountWei, chainId = currentChainId) {
+  return formatEther(amountWei) + ' ' + contributionSymbol(chainId);
+}
+
+function updateTempoFundingHint() {
+  if (!el.tempoFundingHint) return;
+  const showHint = currentView === 'detail' && isTempoChain();
+  el.tempoFundingHint.className = showHint ? 'tempo-funding show' : 'tempo-funding';
+}
+
+function closeAccountMenu() {
+  if (el.accountMenu) el.accountMenu.className = 'account-menu';
+}
+
+function showUnlockModal(title, bodyHtml) {
+  if (!el.unlockModal) return;
+  el.unlockModalTitle.textContent = title;
+  el.unlockModalBody.innerHTML = bodyHtml;
+  el.unlockModal.className = 'unlock-modal show';
+}
+
+function closeUnlockModal() {
+  if (!el.unlockModal) return;
+  el.unlockModal.className = 'unlock-modal';
 }
 
 function getChainConfig() {
@@ -1179,6 +1341,7 @@ function showBrowseView() {
   el.detailView.style.display = 'none';
   hideTxStatus();
   multiplierQty = 1;
+  updateTempoFundingHint();
 }
 
 function showDetailView(addr) {
@@ -1190,6 +1353,7 @@ function showDetailView(addr) {
   el.contentSection.style.display = 'none';
   hideTxStatus();
   multiplierQty = 1;
+  updateTempoFundingHint();
   loadLockbox();
 }
 
@@ -1265,7 +1429,7 @@ async function loadAllLockboxes() {
 
 function renderBrowseCard(data) {
   const pct = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
-  const priceStr = formatEther(data.price) + ' ETH';
+  const priceStr = formatContribution(data.price);
 
   const card = document.createElement('div');
   card.className = 'browse-card';
@@ -1328,7 +1492,7 @@ async function loadLockbox() {
     el.lockboxDesc.textContent = descVal;
     el.authorAddr.textContent = shortAddr(author);
 
-    el.metaPrice.textContent = formatEther(contribAmt) + ' ETH';
+    el.metaPrice.textContent = formatContribution(contribAmt);
     el.metaThreshold.textContent = totalNum + ' contributions';
     el.metaStatus.textContent = isUnlocked ? 'Unlocked' : 'Locked';
     el.metaStatus.style.color = isUnlocked ? 'var(--success)' : 'var(--accent)';
@@ -1338,14 +1502,18 @@ async function loadLockbox() {
     el.progressFill.className = 'progress-bar-fill' + (isUnlocked ? ' full' : '');
     el.progressPct.textContent = pct + '%';
 
-    const revealLabels = ['Locked', '25% Revealed', '50% Revealed', '75% Revealed', 'Fully Unlocked'];
+    const revealLabel = isUnlocked
+      ? 'Fully unlocked (100%)'
+      : level === 0
+        ? 'Locked (0% funded)'
+        : 'Preview tier ' + level + ' unlocked (' + pct + '% funded)';
     for (let i = 0; i < 4; i++) {
       const pip = $('pip' + i);
       pip.className = 'reveal-pip';
       if (isUnlocked) pip.classList.add('unlocked');
       else if (i < level) pip.classList.add('active');
     }
-    el.revealLabel.textContent = revealLabels[level] || 'Locked';
+    el.revealLabel.textContent = revealLabel;
 
     el.unlockBanner.className = 'unlock-banner' + (isUnlocked ? ' show' : '');
 
@@ -1355,6 +1523,8 @@ async function loadLockbox() {
 
     if (isUnlocked) {
       renderContentSection();
+    } else if (level > 0) {
+      await renderTeaserSection(level, pct);
     } else {
       el.contentSection.style.display = 'none';
     }
@@ -1412,17 +1582,6 @@ async function updateContributeButton(isUnlocked, contribAmt) {
     return;
   }
 
-  try {
-    const alreadyContributed = await readContract('hasContributed', [connectedAddress]);
-    if (alreadyContributed) {
-      btn.textContent = 'Already contributed';
-      btn.disabled = true;
-      btn.className = 'btn-contribute already';
-      el.multiplierSection.style.display = 'none';
-      return;
-    }
-  } catch (e) {}
-
   el.multiplierSection.style.display = 'block';
 
   if (cachedRemaining > 0 && multiplierQty > cachedRemaining) {
@@ -1432,11 +1591,12 @@ async function updateContributeButton(isUnlocked, contribAmt) {
   updateMultiplierDisplay();
 
   const price = formatEther(contribAmt);
+  const symbol = contributionSymbol();
   if (multiplierQty === 1) {
-    btn.textContent = 'Contribute ' + price + ' ETH';
+    btn.textContent = 'Contribute ' + price + ' ' + symbol;
   } else {
     const totalWei = contribAmt * BigInt(multiplierQty);
-    btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(totalWei) + ' ETH)';
+    btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(totalWei) + ' ' + symbol + ')';
   }
   btn.disabled = false;
   btn.className = 'btn-contribute';
@@ -1461,6 +1621,35 @@ function renderContentSection() {
           'using Lit Protocol\u2019s threshold encryption network once the lockbox is unlocked.' +
         '</div>' +
       '</div>';
+  }
+
+  el.contentSection.style.display = 'block';
+}
+
+async function renderTeaserSection(level, pct) {
+  let teaserCID = '';
+  try {
+    teaserCID = await readContract('getTeaserCID', [level]);
+  } catch (e) {
+    teaserCID = '';
+  }
+
+  const header =
+    '<div class="content-placeholder">' +
+      '<div class="content-placeholder-text">Preview unlocked: tier ' + level + ' (' + pct + '% funded)</div>' +
+      '<div class="content-placeholder-note">';
+  const footer = '</div></div>';
+
+  if (teaserCID) {
+    el.contentBody.innerHTML =
+      header +
+      'Teaser content available: <a href="https://ipfs.io/ipfs/' + escapeHtml(teaserCID.replace('ipfs://', '')) + '" target="_blank" rel="noopener">' + escapeHtml(teaserCID) + '</a>' +
+      footer;
+  } else {
+    el.contentBody.innerHTML =
+      header +
+      'The lockbox reached a preview tier, but no teaser file was published for this stage.' +
+      footer;
   }
 
   el.contentSection.style.display = 'block';
@@ -1502,22 +1691,23 @@ function updateMultiplierDisplay() {
 
   if (cachedContribAmt > 0n) {
     const totalWei = cachedContribAmt * BigInt(multiplierQty);
-    const totalEth = formatEther(totalWei);
-    const baseEth = formatEther(cachedContribAmt);
+    const totalAmount = formatEther(totalWei);
+    const baseAmount = formatEther(cachedContribAmt);
+    const symbol = contributionSymbol();
 
     if (multiplierQty === 1) {
-      el.mulCost.textContent = baseEth + ' ETH';
+      el.mulCost.textContent = baseAmount + ' ' + symbol;
       el.mulNote.style.display = 'none';
     } else {
-      el.mulCost.textContent = multiplierQty + ' \u00d7 ' + baseEth + ' = ' + totalEth + ' ETH';
+      el.mulCost.textContent = multiplierQty + ' \u00d7 ' + baseAmount + ' = ' + totalAmount + ' ' + symbol;
       el.mulNote.style.display = 'block';
     }
 
     const btn = el.contributeBtn;
     if (!btn.disabled) {
       btn.textContent = multiplierQty === 1
-        ? 'Contribute ' + baseEth + ' ETH'
-        : 'Pay ' + multiplierQty + '\u00d7 (' + totalEth + ' ETH)';
+        ? 'Contribute ' + baseAmount + ' ' + symbol
+        : 'Pay ' + multiplierQty + '\u00d7 (' + totalAmount + ' ' + symbol + ')';
     }
   }
 
@@ -1556,46 +1746,86 @@ async function contribute() {
   try {
     await switchNetwork();
 
+    const progressBefore = await readContract('getProgress');
+    const revealBefore = Number(await readContract('getRevealLevel'));
+    const prevCurrent = Number(progressBefore[0]);
+    const prevUnlocked = progressBefore[2];
+
     const contribAmt = await readContract('contributionAmount');
-    const totalValue = contribAmt * BigInt(multiplierQty);
+    const txCount = Math.max(1, multiplierQty);
+    const hashes = [];
 
-    const txHash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        from: connectedAddress,
-        to: selectedLockboxAddr,
-        value: '0x' + totalValue.toString(16),
-        data: '0xd7bb99ba',
-      }],
-    });
+    for (let i = 0; i < txCount; i++) {
+      btn.textContent = txCount === 1
+        ? 'Transaction pending...'
+        : 'Submitting contribution ' + (i + 1) + ' / ' + txCount + '...';
 
-    btn.textContent = 'Transaction pending...';
-    showTxStatus('pending',
-      'Tx submitted &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: connectedAddress,
+          to: selectedLockboxAddr,
+          value: '0x' + contribAmt.toString(16),
+          data: '0xd7bb99ba',
+        }],
+      });
+      hashes.push(txHash);
 
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      showTxStatus('pending',
+        'Tx ' + (i + 1) + '/' + txCount + ' submitted &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
 
-    if (receipt.status === 'success') {
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== 'success') {
+        throw new Error('Transaction reverted at step ' + (i + 1));
+      }
+
+      const progressMid = await readContract('getProgress');
+      if (progressMid[2]) {
+        break;
+      }
+    }
+
+    if (hashes.length > 0) {
+      const progressAfter = await readContract('getProgress');
+      const revealAfter = Number(await readContract('getRevealLevel'));
+      const newCurrent = Number(progressAfter[0]);
+      const newTotal = Number(progressAfter[1]);
+      const nowUnlocked = progressAfter[2];
+      const addedContributions = Math.max(0, newCurrent - prevCurrent);
+      const lastHash = hashes[hashes.length - 1];
+
       showTxStatus('confirmed',
-        'Confirmed! &mdash; <a class="tx-hash" href="' + explorerTxUrl(txHash) + '" target="_blank" rel="noopener">' + shortAddr(txHash) + '</a>');
-      btn.textContent = 'Already contributed';
-      btn.className = 'btn-contribute already';
-      btn.disabled = true;
-      multiplierQty = 1;
-      await loadLockbox();
-    } else {
-      showTxStatus('error', 'Transaction reverted');
-      btn.textContent = 'Try again';
+        'Confirmed ' + hashes.length + ' contribution tx' + (hashes.length === 1 ? '' : 's') + ' &mdash; <a class="tx-hash" href="' + explorerTxUrl(lastHash) + '" target="_blank" rel="noopener">' + shortAddr(lastHash) + '</a>');
+      btn.textContent = 'Contribution confirmed';
+      btn.className = 'btn-contribute success';
       btn.disabled = false;
-      btn.className = 'btn-contribute';
+      multiplierQty = 1;
+
+      if (nowUnlocked && !prevUnlocked) {
+        showUnlockModal(
+          'Lockbox unlocked',
+          'You pushed this lockbox to full unlock. Total progress is now <strong>' + newCurrent + ' / ' + newTotal + '</strong>.'
+        );
+      } else if (revealAfter > revealBefore) {
+        showUnlockModal(
+          'New preview unlocked',
+          'Your payment added <strong>' + addedContributions + '</strong> contribution' + (addedContributions === 1 ? '' : 's') +
+          ' and unlocked preview tier <strong>' + revealAfter + '</strong>.'
+        );
+      } else {
+        showUnlockModal(
+          'Contribution recorded',
+          'Progress is now <strong>' + newCurrent + ' / ' + newTotal + '</strong>. Added contributions: <strong>' + addedContributions + '</strong>.'
+        );
+      }
+
+      await loadLockbox();
     }
   } catch (err) {
     console.error('Contribute failed:', err);
     const msg = err?.message || 'Unknown error';
     if (msg.includes('User denied') || msg.includes('rejected')) {
       showTxStatus('error', 'Transaction rejected');
-    } else if (msg.includes('Already contributed')) {
-      showTxStatus('error', 'You have already contributed');
     } else {
       showTxStatus('error', 'Error: ' + msg.slice(0, 80));
     }
@@ -1603,10 +1833,11 @@ async function contribute() {
     btn.className = 'btn-contribute';
     const contribAmt = await readContract('contributionAmount').catch(() => 0n);
     if (contribAmt) {
+      const symbol = contributionSymbol();
       if (multiplierQty === 1) {
-        btn.textContent = 'Contribute ' + formatEther(contribAmt) + ' ETH';
+        btn.textContent = 'Contribute ' + formatEther(contribAmt) + ' ' + symbol;
       } else {
-        btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(contribAmt * BigInt(multiplierQty)) + ' ETH)';
+        btn.textContent = 'Pay ' + multiplierQty + '\u00d7 (' + formatEther(contribAmt * BigInt(multiplierQty)) + ' ' + symbol + ')';
       }
     } else {
       btn.textContent = 'Contribute';
@@ -1627,10 +1858,64 @@ async function connectWallet() {
       el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
       el.connectBtn.className = 'btn-connect connected';
       el.connectBtn.disabled = false;
+      closeAccountMenu();
       if (currentView === 'detail') await loadLockbox();
     }
   } catch (err) {
     console.error('Connect failed:', err);
+  }
+}
+
+async function switchAccount() {
+  if (!window.ethereum) return;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (accounts.length > 0) {
+      connectedAddress = accounts[0];
+      el.connectBtn.innerHTML = '<span class="wallet-dot"></span>' + shortAddr(connectedAddress);
+      el.connectBtn.className = 'btn-connect connected';
+      closeAccountMenu();
+      if (currentView === 'detail') await loadLockbox();
+    }
+  } catch (err) {
+    console.error('Switch account failed:', err);
+  }
+}
+
+function disconnectWalletUi() {
+  if (!confirm('Disconnect this app session from the currently shown address?')) {
+    closeAccountMenu();
+    return;
+  }
+  connectedAddress = null;
+  el.connectBtn.textContent = 'Connect Wallet';
+  el.connectBtn.className = 'btn-connect';
+  closeAccountMenu();
+  if (currentView === 'detail') loadLockbox();
+}
+
+async function copyAddress() {
+  if (!connectedAddress) return;
+  try {
+    await navigator.clipboard.writeText(connectedAddress);
+    closeAccountMenu();
+    showTxStatus('confirmed', 'Address copied: ' + shortAddr(connectedAddress));
+  } catch (err) {
+    closeAccountMenu();
+    showTxStatus('error', 'Copy failed. Try manually selecting the address.');
+  }
+}
+
+function handleConnectButtonClick() {
+  if (!connectedAddress) {
+    connectWallet();
+    return;
+  }
+
+  if (el.accountMenu.classList.contains('show')) {
+    closeAccountMenu();
+  } else {
+    el.accountMenu.className = 'account-menu show';
   }
 }
 
@@ -1659,12 +1944,26 @@ async function switchNetwork() {
   }
 }
 
-el.connectBtn.addEventListener('click', connectWallet);
+el.connectBtn.addEventListener('click', handleConnectButtonClick);
+el.copyAddressBtn.addEventListener('click', copyAddress);
+el.switchAccountBtn.addEventListener('click', switchAccount);
+el.disconnectBtn.addEventListener('click', disconnectWalletUi);
 el.contributeBtn.addEventListener('click', contribute);
 el.mulSub10.addEventListener('click', () => updateMultiplier(-10));
 el.mulSub1.addEventListener('click', () => updateMultiplier(-1));
 el.mulAdd1.addEventListener('click', () => updateMultiplier(1));
 el.mulAdd10.addEventListener('click', () => updateMultiplier(10));
+el.unlockModalClose.addEventListener('click', closeUnlockModal);
+el.unlockModal.addEventListener('click', (ev) => {
+  if (ev.target === el.unlockModal) closeUnlockModal();
+});
+
+document.addEventListener('click', (ev) => {
+  if (!el.accountMenu.classList.contains('show')) return;
+  if (ev.target === el.connectBtn || el.connectBtn.contains(ev.target)) return;
+  if (el.accountMenu.contains(ev.target)) return;
+  closeAccountMenu();
+});
 
 el.backLink.addEventListener('click', () => {
   showBrowseView();
@@ -1675,6 +1974,8 @@ el.networkSelect.addEventListener('change', (e) => {
   currentChainId = Number(e.target.value);
   createClient();
   hideTxStatus();
+  closeAccountMenu();
+  updateTempoFundingHint();
   browseInitialLoad = true;
   showBrowseView();
   loadAllLockboxes();
@@ -1690,6 +1991,7 @@ if (window.ethereum) {
       el.connectBtn.textContent = 'Connect Wallet';
       el.connectBtn.className = 'btn-connect';
     }
+    closeAccountMenu();
     if (currentView === 'detail') loadLockbox();
   });
 
@@ -1715,6 +2017,7 @@ async function autoConnect() {
 }
 
 createClient();
+updateTempoFundingHint();
 autoConnect().then(() => loadAllLockboxes());
 
 refreshTimer = setInterval(() => {

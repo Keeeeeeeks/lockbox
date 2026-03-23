@@ -1,11 +1,8 @@
 {
   "network": "baseSepolia",
-  "factory": "0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f",
-  "lockbox": "0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861",
+  "factory": "0xb333abf8b8e510751514c5f91bea10a4cb0fe2b4",
+  "lockbox": "0xC8920AC5ce39f566adBCb3f651A1d9A7e9558D38",
   "threshold": 5,
   "contributionAmount": "0.001",
-  "deployedAt": "2026-03-22T22:45:00.000Z",
-  "chainId": 84532,
-  "explorerFactory": "https://sepolia.basescan.org/address/0xbdf727a08b505de4f9db7f2b7093acf6f2b3906f",
-  "explorerLockbox": "https://sepolia.basescan.org/address/0x2f6104E0552dF987FbBBeB5BD072Aa5c5426D861"
+  "deployedAt": "2026-03-23T03:07:24.281Z"
 }

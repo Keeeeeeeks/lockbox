@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseEther } from "viem";
+import { createPublicClient, createWalletClient, http, parseUnits } from "viem";
 import { tempo } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { readFileSync, writeFileSync } from "fs";
@@ -51,7 +51,7 @@ async function main() {
       "ipfs://placeholder-metadata",
       "ipfs://placeholder-encrypted",
       5n,
-      parseEther("0.001"),
+      parseUnits("1", 6),
       [],
     ],
   });
@@ -81,7 +81,7 @@ async function main() {
     factory: factoryAddr,
     lockbox: lockboxAddr,
     threshold: 5,
-    contributionAmount: "0.001",
+    contributionAmount: "1 pathUSD",
     deployedAt: new Date().toISOString(),
   }, null, 2));
   console.log("\nSaved to deployment-tempo.json");
