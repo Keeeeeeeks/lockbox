@@ -177,6 +177,7 @@ async function submitProject(
   apiKey: string,
   teamUUID: string,
   repoURL: string,
+  deployedURL: string,
   moltbookPostURL: string,
   trackUUIDs: string[]
 ) {
@@ -196,10 +197,11 @@ Key moments:
     teamUUID,
     name: "Lockbox",
     description:
-      "Collectively-unlockable encrypted content — crowdfunding for knowledge. N contributions unlock the content for everyone. Each contribution is an on-chain ERC-8004 receipt. Progressive reveals at 25/50/75% build collective confidence before full unlock.",
+      "Collectively-unlockable encrypted content across Base, Tempo, and Status. Contributors coordinate threshold funding, unlock progressive teaser tiers, and trigger full release with on-chain ERC-8004 receipts.",
     problemStatement:
-      "Content monetization is atomistic: individual paywalls ignore the network effects of knowledge. Authors set prices, readers evaluate individually, and transactions are isolated. There's no collective dimension, no social proof, no coordination. Lockbox transforms content access into collective action — where the question isn't 'is this worth $5 to me?' but 'is this worth $5 to 10 of us?'",
+      "Most content monetization is individual and static. Communities cannot coordinate shared unlocks with transparent progress and verifiable receipts. Lockbox turns access into collective action: groups fund together on-chain until thresholds are met, with progressive reveals and final unlock enforced by contract state.",
     repoURL,
+    deployedURL,
     trackUUIDs,
     conversationLog,
     submissionMetadata: {
@@ -271,6 +273,8 @@ async function main() {
   const walletAddress = process.env.WALLET_ADDRESS;
   const repoURL =
     process.env.REPO_URL || "https://github.com/Keeeeeeeks/lockbox";
+  const deployedURL =
+    process.env.DEPLOYED_URL || "https://keeeeeeeks.github.io/lockbox/app.html";
 
   if (!apiKey || !teamUUID) {
     console.error("Run register-hackathon.ts first, then set SYNTHESIS_API_KEY and SYNTHESIS_TEAM_UUID in .env");
@@ -299,6 +303,7 @@ async function main() {
     apiKey,
     teamUUID,
     repoURL,
+    deployedURL,
     moltbookPostURL,
     trackUUIDs
   );
